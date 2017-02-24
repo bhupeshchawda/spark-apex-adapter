@@ -17,8 +17,6 @@ import scala.Tuple2;
 public class LinearRegressionTest {
     public static void main(String[] args) {
         PathProperties properties = new PathProperties();
-        properties.load("properties/path.properties");
-
         SparkConf conf = new SparkConf().setAppName("Linear Regression Test").setMaster("local");
         JavaSparkContext jsc = new JavaSparkContext(conf);
 

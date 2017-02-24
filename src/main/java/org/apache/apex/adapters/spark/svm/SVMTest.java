@@ -18,7 +18,6 @@ import scala.reflect.ClassTag;
 public class SVMTest {
     public static void main(String[] args) {
         PathProperties properties = new PathProperties();
-        properties.load("properties/path.properties");
         SparkContext sc= new SparkContext(new SparkConf().setMaster("local").setAppName("Linear SVM Testing Module"));
         ClassTag<LabeledPoint> tag = scala.reflect.ClassTag$.MODULE$.apply(LabeledPoint.class);
         JavaRDD<LabeledPoint> data = new JavaRDD<>(MLUtils.loadLibSVMFile(sc, properties.getProperty("testData")),tag);

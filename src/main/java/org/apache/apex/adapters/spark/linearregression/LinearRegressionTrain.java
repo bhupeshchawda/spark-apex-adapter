@@ -17,7 +17,6 @@ import org.apache.spark.mllib.regression.LinearRegressionWithSGD;
 public class LinearRegressionTrain {
     public static void main(String[] args) {
         PathProperties properties = new PathProperties();
-        properties.load("properties/path.properties");
         ApexConf conf = new ApexConf().setAppName("Linear Regression Example").setMaster("local");
         ApexContext sc = new ApexContext(conf);
 

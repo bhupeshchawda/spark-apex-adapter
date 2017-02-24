@@ -16,7 +16,7 @@ import scala.reflect.ClassTag;
 public class SVMTrain {
     public static void main(String[] args){
         PathProperties properties = new PathProperties();
-        properties.load("properties/path.properties");
+
         ApexContext sc= new ApexContext(new ApexConf().setMaster("local[2]").setAppName("Linear SVM"));
         ClassTag<LabeledPoint> tag = scala.reflect.ClassTag$.MODULE$.apply(LabeledPoint.class);
         String path = properties.getProperty("svmTrain");

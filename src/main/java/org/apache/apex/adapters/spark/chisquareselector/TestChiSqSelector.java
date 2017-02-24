@@ -30,7 +30,6 @@ public class TestChiSqSelector implements Serializable {
     }
     public TestChiSqSelector(ApexContext sc){
         PathProperties properties = new PathProperties();
-        properties.load("properties/path.properties");
         String path = properties.getProperty("chiTrainData");
 
         ClassTag<LabeledPoint> tag = scala.reflect.ClassTag$.MODULE$.apply(LabeledPoint.class);

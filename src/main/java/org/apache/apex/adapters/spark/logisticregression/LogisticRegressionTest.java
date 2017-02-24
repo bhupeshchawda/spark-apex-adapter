@@ -18,8 +18,6 @@ import scala.reflect.ClassTag;
 public class LogisticRegressionTest {
     public static void main(String[] args){
         PathProperties properties = new PathProperties();
-        properties.load("properties/path.properties");
-
         SparkContext sc = new SparkContext(new SparkConf().setAppName("Logistic Regression Test Module").setMaster("local"));
         ClassTag<LabeledPoint> tag = scala.reflect.ClassTag$.MODULE$.apply(LabeledPoint.class);
         JavaRDD<LabeledPoint> data = new JavaRDD<>( MLUtils.loadLibSVMFile(sc,properties.getProperty("testData")),tag);

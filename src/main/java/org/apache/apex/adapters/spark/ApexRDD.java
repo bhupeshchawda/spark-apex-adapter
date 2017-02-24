@@ -1,7 +1,6 @@
 package org.apache.apex.adapters.spark;
 
 import alluxio.AlluxioURI;
-import alluxio.client.file.FileInStream;
 import alluxio.exception.AlluxioException;
 import com.datatorrent.api.Context;
 import com.datatorrent.api.LocalMode;
@@ -9,6 +8,7 @@ import com.datatorrent.lib.codec.JavaSerializationStreamCodec;
 import com.datatorrent.stram.client.StramAppLauncher;
 import org.apache.apex.adapters.spark.apexscala.ApexPartition;
 import org.apache.apex.adapters.spark.apexscala.ScalaApexRDD;
+import org.apache.apex.adapters.spark.io.ReadFromFS;
 import org.apache.apex.adapters.spark.operators.*;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -70,26 +70,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         context=ac;
         _sc=ac;
     }
-    public synchronized  static Object readFromAlluxio(String path)  {
-        try {
-            alluxio.client.file.FileSystem fs = alluxio.client.file.FileSystem.Factory.get();
-            AlluxioURI pathURI = new AlluxioURI("/user/anurag/spark-apex/"+path);
-            FileInStream inStream = fs.openFile(pathURI);
-            ObjectInputStream ois = new ObjectInputStream(inStream);
-            return ois.readObject();
-        }
-        catch (IOException | AlluxioException | ClassNotFoundException e){
-                throw new RuntimeException(e);
-        }
-    }
-    public Object readFromFile(String path) throws IOException, ClassNotFoundException {
-        FileInputStream fis = new FileInputStream(path);
-        ObjectInputStream ois = new ObjectInputStream(fis);
-        Object result = ois.readObject();
-        ois.close();
-        return result;
 
-    }
     public static Integer fileReader(String path){
         BufferedReader br = null;
         FileReader fr = null;
@@ -198,7 +179,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
                 e.printStackTrace();
             }
         }
-        ArrayList<T> collected= (ArrayList<T>) readFromAlluxio("collected");
+        ArrayList<T> collected= (ArrayList<T>) ReadFromFS.read("collected");
         deleteSUCCESSFile();
         return (T[]) collected.toArray();
     }
@@ -221,7 +202,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        ArrayList<T> array = (ArrayList<T>) readFromAlluxio("selectedData");
+        ArrayList<T> array = (ArrayList<T>) ReadFromFS.read("selectedData");
         deleteSUCCESSFile();
 //        T[] arrayT= (T[]) Arrays.copyOf(array.toArray(),array.toArray().length,Integer[].class);
         return (T[]) array.toArray();
@@ -312,7 +293,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
                 e.printStackTrace();
             }
         }
-        T reducedValue= (T) readFromAlluxio("reducedValue");
+        T reducedValue= (T) ReadFromFS.read("reducedValue");
         deleteSUCCESSFile();
         return reducedValue;
     }
@@ -346,7 +327,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
                 e.printStackTrace();
             }
         }
-        HashMap<T, Object> map = (HashMap<T, Object>) readFromAlluxio("countByValueOutput");
+        HashMap<T, Object> map = (HashMap<T, Object>) ReadFromFS.read("countByValueOutput");
         deleteSUCCESSFile();
         return scala.collection.JavaConversions.asScalaMap(map);
     }
@@ -378,7 +359,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
                 e.printStackTrace();
             }
         }
-        deleteSUCCESSFile();
+
         System.out.println("All dags launched Successfully...");
 
     }
@@ -455,7 +436,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
             }
         }
 
-        Long count= (Long) readFromAlluxio("count");
+        Long count= (Long) ReadFromFS.read("count");
 //        try {
 //            while(!successFileExists()) {
 //                Thread.sleep(5);

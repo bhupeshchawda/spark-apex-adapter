@@ -11,10 +11,10 @@ import java.util.Properties;
 public class PathProperties {
     public static Properties properties = new Properties();
 
-    public  void load(String prop_path) {
+    public PathProperties() {
         try {
             String baseDir = System.getProperty("user.dir");
-            String path = baseDir+"/src/main/java/org/apache/apex/adapters/spark/"+prop_path;
+            String path = baseDir+"/src/main/resources/config.properties";
             InputStream input = new FileInputStream(path);
             properties.load(input);
         } catch (IOException e) {
