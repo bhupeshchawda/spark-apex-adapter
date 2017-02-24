@@ -3,10 +3,12 @@ package org.apache.apex.adapters.spark;
 import alluxio.AlluxioURI;
 import alluxio.client.file.FileInStream;
 import alluxio.exception.AlluxioException;
+import com.datatorrent.api.Context;
 import com.datatorrent.api.LocalMode;
-import com.datatorrent.stram.client.StramAppLauncher;
+import com.datatorrent.lib.codec.JavaSerializationStreamCodec;
 import org.apache.apex.adapters.spark.apexscala.ApexPartition;
 import org.apache.apex.adapters.spark.apexscala.ScalaApexRDD;
+import com.datatorrent.stram.client.StramAppLauncher;
 import org.apache.apex.adapters.spark.operators.*;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -26,20 +28,17 @@ import org.apache.spark.storage.StorageLevel;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Function0;
-import scala.Function1;
-import scala.Function2;
-import scala.Option;
+import scala.*;
 import scala.collection.Iterator;
 import scala.collection.Map;
 import scala.math.Ordering;
 import scala.reflect.ClassTag;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.io.Serializable;
+import java.lang.Long;
+import java.util.*;
 import java.util.BitSet;
-import java.util.Properties;
-import java.util.Random;
 
 public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
     private static final long serialVersionUID = -3545979419189338756L;
@@ -322,8 +321,8 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
     public Map<T, Object> countByValue(Ordering<T> ord) {
         MyDAG cloneDag = (MyDAG) SerializationUtils.clone(this.dag);
         DefaultOutputPortSerializable currentOutputPort = getCurrentOutputPort(cloneDag);
-        CountByVlaueOperatorSerializable countByVlaueOperator = cloneDag.addOperator(System.currentTimeMillis() + "" +
-                " CountByVlaueOperatorSerializable", CountByVlaueOperatorSerializable.class);
+        CountByValueOperatorSerializable countByVlaueOperator = cloneDag.addOperator(System.currentTimeMillis() + "" +
+                " CountByValueOperatorSerializable", CountByValueOperatorSerializable.class);
         controlOutput = getControlOutput(cloneDag);
         cloneDag.addStream(System.currentTimeMillis() + " CountValue Stream", currentOutputPort, countByVlaueOperator.getInputPort());
 //        getBaseInputOperator(cloneDag).appName = countByValueApp;
@@ -354,6 +353,36 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
     public Iterator<T> compute(Partition arg0, TaskContext arg1) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+
+    @Override
+    public <U> U aggregate(U zeroValue, Function2<U, T, U> seqOp, Function2<U, U, U> combOp, ClassTag<U> evidence$29) {
+        MyDAG cloneDag = (MyDAG) SerializationUtils.clone(this.dag);
+        DefaultOutputPortSerializable currentOutputPort = getCurrentOutputPort(cloneDag);
+        controlOutput= getControlOutput(cloneDag);
+        AggregateOperator aggregateOperator = cloneDag.addOperator(System.currentTimeMillis()+ " Aggregate Operator " , new AggregateOperator());
+        aggregateOperator.zeroValue = zeroValue;
+        aggregateOperator.seqFunction = seqOp;
+        aggregateOperator.combFunction = combOp;
+        Assert.assertTrue(currentOutputPort != null);
+        cloneDag.addStream(System.currentTimeMillis()+" Aggregator Operator Stream", currentOutputPort, aggregateOperator.input);
+        FileWriterOperator fileWriterOperator = cloneDag.addOperator(System.currentTimeMillis()+"FileWrite Operator from Aggregate",new FileWriterOperator());
+        fileWriterOperator.setAbsoluteFilePath("/tmp/aggregateOutput");
+        cloneDag.addStream(System.currentTimeMillis()+"File Operator Stream",aggregateOperator.output,fileWriterOperator.input);
+        cloneDag.validate();
+        log.debug("DAG successfully validated");
+
+        LocalMode lma = LocalMode.newInstance();
+        Configuration conf = new Configuration(false);
+        GenericApplication app = new GenericApplication();
+        app.setDag(cloneDag);
+        try {
+            launch(cloneDag,3000,"collect",launchOnCluster);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return (U) aggregateOperator.aggregateValue;
     }
 
     @Override
@@ -432,6 +461,21 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         ApexRDD<T> temp1= createClone(cloneDag);
         ApexRDD<T> temp2= createClone(cloneDag2);
         ApexRDD[] temp=new ApexRDD[]{temp1, temp2};
+        return temp;
+    }
+
+    @Override
+    public <U> RDD<Tuple2<T, U>> zip(RDD<U> other, ClassTag<U> evidence$9) {
+        other.collect();
+        MyDAG cloneDag = (MyDAG) SerializationUtils.clone(this.dag);
+        DefaultOutputPortSerializable currentOutputPort = getCurrentOutputPort(cloneDag);
+        ZipOperator<T,U> z = cloneDag.addOperator(System.currentTimeMillis()+ " ZipOperator " , new ZipOperator<T,U>());
+        z.other= Arrays.asList((T[]) other.collect());
+        z.count=z.other.size();
+        cloneDag.addStream( System.currentTimeMillis()+ " ZipOperator ", currentOutputPort, z.input);
+        cloneDag.setInputPortAttribute(z.input, Context.PortContext.STREAM_CODEC, new JavaSerializationStreamCodec());
+        ApexRDD<Tuple2<T,U>> temp= (ApexRDD<Tuple2<T,U>>) SerializationUtils.clone(this);
+        temp.dag=cloneDag;
         return temp;
     }
 
