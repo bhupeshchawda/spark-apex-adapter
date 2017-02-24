@@ -5,10 +5,8 @@ import java.io.IOException
 import alluxio.AlluxioURI
 import alluxio.exception.AlluxioException
 import com.datatorrent.api.LocalMode
-import com.datatorrent.example.utils._
-import com.datatorrent.example.MyBaseOperator
-import org.apache.apex.adapters.spark.{ApexRDD, MyBaseOperator}
-import org.apache.apex.adapters.spark.operators.{DefaultOutputPortSerializable, GenericApplication, MyDAG}
+import org.apache.apex.adapters.spark.ApexRDD
+import org.apache.apex.adapters.spark.operators._
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark._
 import org.apache.spark.annotation.DeveloperApi
@@ -112,7 +110,7 @@ import scala.reflect.ClassTag
 def getCurrentOutputPort(cloneDag: MyDAG): DefaultOutputPortSerializable[_] = {
   try {
     log.debug("Last operator in the Dag {}", this.asInstanceOf[ApexRDD[T]].getDag().getLastOperatorName)
-    val currentOperator = cloneDag.getOperatorMeta(cloneDag.getLastOperatorName).getOperator.asInstanceOf[MyBaseOperator[_]]
+    val currentOperator = cloneDag.getOperatorMeta(cloneDag.getLastOperatorName).getOperator.asInstanceOf[BaseOperatorSerializable[_]]
     currentOperator.getOutputPort
   }
   catch {
@@ -127,7 +125,7 @@ def getCurrentOutputPort(cloneDag: MyDAG): DefaultOutputPortSerializable[_] = {
 //  val cloneDag = SerializationUtils.clone(this.asInstanceOf[ApexRDD[T]].getDag()).asInstanceOf[MyDAG]
 //
 //  val currentOutputPort = getCurrentOutputPort(cloneDag)
-//  val takeOperator = cloneDag.addOperator(System.currentTimeMillis + " Take Operator", classOf[TakeOperator[T]])
+//  val takeOperator = cloneDag.addOperator(System.currentTimeMillis + " Take Operator", classOf[TakeOperatorSerializable[T]])
 //  takeOperator.count = num
 //    var ambiguous = cloneDag.getClass.getMethods.filter(_.getName == "addStream")
 //    var wanted = ambiguous.find(_.getParameterTypes.length == 3).get

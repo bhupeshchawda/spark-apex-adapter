@@ -1,4 +1,4 @@
-package org.apache.apex.adapters.spark.algorithmapex;
+package org.apache.apex.adapters.spark.algorithmapex.decisiontree;
 
 import org.apache.apex.adapters.spark.ApexConf;
 import org.apache.apex.adapters.spark.ApexContext;
@@ -14,7 +14,7 @@ import java.util.HashMap;
 /**
  * Created by anurag on 27/12/16.
  */
-public class DecisionTreeJava {
+public class DecisionTree {
 
     public static void main(String args[]) {
         ApexConf apexConf = new ApexConf().setMaster("local[2]").setAppName("JavaDecisionTreeClassificationExample");
@@ -35,7 +35,7 @@ public class DecisionTreeJava {
         Integer maxDepth = 5;
         Integer maxBins = 32;
 
-// Train a DecisionTreeJava model for classification.
+// Train a DecisionTree model for classification.
         final DecisionTreeModel model = DecisionTreeApex.trainClassifier(data, numClasses,
                 categoricalFeaturesInfo, impurity, maxDepth, maxBins);
 

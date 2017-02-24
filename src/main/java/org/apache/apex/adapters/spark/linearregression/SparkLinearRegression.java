@@ -1,9 +1,8 @@
-package org.apache.apex.adapters.spark.algorithmspark.javaexamples.pexlinearregression;
+package org.apache.apex.adapters.spark.linearregression;
 import scala.Tuple2;
 
 import org.apache.spark.api.java.*;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.regression.LabeledPoint;
 import org.apache.spark.mllib.regression.LinearRegressionModel;

@@ -5,7 +5,6 @@ import alluxio.client.file.FileInStream;
 import alluxio.exception.AlluxioException;
 import com.datatorrent.api.Context;
 import com.datatorrent.api.InputOperator;
-import org.apache.apex.adapters.spark.MyBaseOperator;
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import org.slf4j.Logger;
@@ -20,11 +19,11 @@ import java.io.Serializable;
  * Created by harsh on 2/12/16.
  */
 @DefaultSerializer(JavaSerializer.class)
-public class BaseInputOperator<T> extends MyBaseOperator<T> implements InputOperator,Serializable {
+public class BaseInputOperatorSerializable<T> extends BaseOperatorSerializable<T> implements InputOperator,Serializable {
     private transient BufferedReader br;
     public String path;
 
-    public BaseInputOperator(){
+    public BaseInputOperatorSerializable(){
 
     }
 
@@ -85,7 +84,7 @@ public class BaseInputOperator<T> extends MyBaseOperator<T> implements InputOper
             controlOut.emit(true);
         }
     }
-    Logger log = LoggerFactory.getLogger(BaseInputOperator.class);
+    Logger log = LoggerFactory.getLogger(BaseInputOperatorSerializable.class);
     @Override
     public void setup(Context.OperatorContext context) {
         super.setup(context);

@@ -1,7 +1,6 @@
 package org.apache.apex.adapters.spark.operators;
 
 import com.datatorrent.api.Context;
-import org.apache.apex.adapters.spark.MyBaseOperator;
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import org.slf4j.Logger;
@@ -14,7 +13,7 @@ import java.util.BitSet;
  * Created by harsh on 8/12/16.
  */
 @DefaultSerializer(JavaSerializer.class)
-public class RandomSplitOperator<T> extends MyBaseOperator implements Serializable {
+public class RandomSplitOperatorSerializable<T> extends BaseOperatorSerializable implements Serializable {
 
     public double[] weights;
 
@@ -34,7 +33,7 @@ public class RandomSplitOperator<T> extends MyBaseOperator implements Serializab
 
     public boolean done= false;
     private int index=0;
-    Logger log = LoggerFactory.getLogger(RandomSplitOperator.class);
+    Logger log = LoggerFactory.getLogger(RandomSplitOperatorSerializable.class);
 
     public DefaultInputPortSerializable<T> input = new DefaultInputPortSerializable<T>() {
         @Override

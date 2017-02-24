@@ -1,16 +1,15 @@
 package org.apache.apex.adapters.spark.operators;
 
-import org.apache.apex.adapters.spark.MyBaseOperator;
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 
 import java.io.Serializable;
 @DefaultSerializer(JavaSerializer.class)
-public class CountOperator<T> extends MyBaseOperator implements Serializable
+public class CountOperatorSerializable<T> extends BaseOperatorSerializable implements Serializable
 {
     private boolean done = false;
 
-    public CountOperator() {
+    public CountOperatorSerializable() {
     }
 
     public DefaultOutputPortSerializable<Integer> getCountOutputPort() {

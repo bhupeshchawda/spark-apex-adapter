@@ -1,4 +1,4 @@
-package org.apache.apex.adapters.spark.algorithmspark.javaexamples;
+package org.apache.apex.adapters.spark.logisticregression;
 
 import org.apache.apex.adapters.spark.apexscala.AlgorithmTest;
 import org.apache.spark.SparkConf;
@@ -16,9 +16,9 @@ import scala.reflect.ClassTag;
 /**
  * Created by anurag on 19/12/16.
  */
-public class    LogisticRegressionTest {
+public class SparkLogisticRegression {
     public static  void main(String [] args){
-        SparkContext sc= new SparkContext(new SparkConf().setMaster("local[2]").setAppName("Kmeans"));
+        SparkContext sc= new SparkContext(new SparkConf().setMaster("local[2]").setAppName("Logistic Regression"));
         String path = "/home/anurag/spark-master/data/mllib/sample_libsvm_data.txt";
         ClassTag<LabeledPoint> tag = scala.reflect.ClassTag$.MODULE$.apply(LabeledPoint.class);
         JavaRDD<LabeledPoint> data = new JavaRDD<>( MLUtils.loadLibSVMFile(sc,AlgorithmTest.diabetes()),tag);

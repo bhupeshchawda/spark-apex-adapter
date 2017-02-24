@@ -1,7 +1,6 @@
 package org.apache.apex.adapters.spark.operators;
 
 import com.datatorrent.api.Context;
-import org.apache.apex.adapters.spark.MyBaseOperator;
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import org.apache.spark.TaskContext;
@@ -15,7 +14,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 @DefaultSerializer(JavaSerializer.class)
-public class MapPartitionOperator<T,U> extends MyBaseOperator implements Serializable {
+public class MapPartitionOperatorSerializable<T,U> extends BaseOperatorSerializable implements Serializable {
     int id=0;
     ArrayList<T> rddData = new ArrayList<>();
     public TaskContext taskContext;
@@ -34,7 +33,7 @@ public class MapPartitionOperator<T,U> extends MyBaseOperator implements Seriali
 
     }
 
-    Logger log = LoggerFactory.getLogger(MapPartitionOperator.class);
+    Logger log = LoggerFactory.getLogger(MapPartitionOperatorSerializable.class);
     public Function1<Iterator<T>, Iterator<U>> f;
     public DefaultOutputPortSerializable<U> output = new DefaultOutputPortSerializable();
     public DefaultInputPortSerializable<T> input = new DefaultInputPortSerializable<T>() {

@@ -1,4 +1,4 @@
-package org.apache.apex.adapters.spark;
+package org.apache.apex.adapters.spark.operators;
 
 import com.datatorrent.common.util.BaseOperator;
 import org.apache.apex.adapters.spark.operators.DefaultInputPortSerializable;
@@ -12,8 +12,8 @@ import java.io.Serializable;
  * Created by harsh on 2/12/16.
  */
 @DefaultSerializer(JavaSerializer.class)
-public abstract class MyBaseOperator<T> extends BaseOperator implements  Serializable{
-    public MyBaseOperator(){
+public abstract class BaseOperatorSerializable<T> extends BaseOperator implements  Serializable{
+    public BaseOperatorSerializable(){
 
     }
     public abstract DefaultInputPortSerializable<T> getInputPort();

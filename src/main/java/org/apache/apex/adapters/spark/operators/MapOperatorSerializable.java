@@ -1,7 +1,6 @@
 package org.apache.apex.adapters.spark.operators;
 
 import com.datatorrent.api.Context;
-import org.apache.apex.adapters.spark.MyBaseOperator;
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import org.slf4j.Logger;
@@ -11,13 +10,13 @@ import scala.Function1;
 import java.io.Serializable;
 
 @DefaultSerializer(JavaSerializer.class)
-public class MapOperator<T,U> extends MyBaseOperator implements Serializable {
+public class MapOperatorSerializable<T,U> extends BaseOperatorSerializable implements Serializable {
     int id=0;
     @Override
     public void setup(Context.OperatorContext context) {
         super.setup(context);
     }
-    Logger log = LoggerFactory.getLogger(MapOperator.class);
+    Logger log = LoggerFactory.getLogger(MapOperatorSerializable.class);
     public Function1<T,U> f;
     public DefaultOutputPortSerializable<U> output = new DefaultOutputPortSerializable<>();
     public DefaultInputPortSerializable<T> input = new DefaultInputPortSerializable<T>() {

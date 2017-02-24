@@ -1,7 +1,6 @@
-package org.apache.apex.adapters.spark.algorithmspark
+package org.apache.apex.adapters.spark.algorithmapex.decisiontree
 
 import org.apache.apex.adapters.spark.apexscala.AlgorithmTest
-import org.apache.spark.mllib.tree.DecisionTree
 import org.apache.spark.mllib.tree.model.DecisionTreeModel
 import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.{SparkConf, SparkContext}
@@ -24,7 +23,7 @@ object DecisionTreeScala{
     val splits = data.randomSplit(Array(0.7, 0.3))
     val (trainingData, testData) = (splits(0), splits(1))
 
-    // Train a DecisionTreeJava model.
+    // Train a DecisionTree model.
     //  Empty categoricalFeaturesInfo indicates all features are continuous.
     val numClasses = 2
     val categoricalFeaturesInfo = Map[Int, Int]()
@@ -32,7 +31,7 @@ object DecisionTreeScala{
     val maxDepth = 5
     val maxBins = 32
 
-    val model = DecisionTree.trainClassifier(trainingData, numClasses, categoricalFeaturesInfo,
+    val model = org.apache.spark.mllib.tree.DecisionTree.trainClassifier(trainingData, numClasses, categoricalFeaturesInfo,
       impurity, maxDepth, maxBins)
 
     // Evaluate model on test instances and compute test error

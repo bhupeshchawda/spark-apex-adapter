@@ -1,6 +1,5 @@
 package org.apache.apex.adapters.spark.operators;
 
-import org.apache.apex.adapters.spark.MyBaseOperator;
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import org.apache.spark.mllib.regression.LabeledPoint;
@@ -13,10 +12,10 @@ import java.io.Serializable;
  * Created by harsh on 17/12/16.
  */
 @DefaultSerializer(JavaSerializer.class)
-public class FirstOperator<U> extends MyBaseOperator implements Serializable {
+public class FirstOperatorSerializable<U> extends BaseOperatorSerializable implements Serializable {
     private boolean flag =true;
     public LabeledPoint a;
-    Logger log = LoggerFactory.getLogger(FirstOperator.class);
+    Logger log = LoggerFactory.getLogger(FirstOperatorSerializable.class);
     public DefaultInputPortSerializable<U> input = new DefaultInputPortSerializable<U>() {
 
         @Override

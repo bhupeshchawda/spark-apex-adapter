@@ -1,6 +1,5 @@
 package org.apache.apex.adapters.spark.operators;
 
-import org.apache.apex.adapters.spark.MyBaseOperator;
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 
@@ -10,8 +9,8 @@ import java.io.Serializable;
  * Created by anurag on 27/12/16.
  */
 @DefaultSerializer(JavaSerializer.class)
-public class SampleOperator<T> extends MyBaseOperator implements Serializable {
-    public SampleOperator(){}
+public class SampleOperatorSerializable<T> extends BaseOperatorSerializable implements Serializable {
+    public SampleOperatorSerializable(){}
     public static  double fraction;
     public DefaultOutputPortSerializable<T> output= new DefaultOutputPortSerializable();
     public DefaultInputPortSerializable<T> input = new DefaultInputPortSerializable<T>() {

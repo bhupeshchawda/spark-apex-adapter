@@ -1,7 +1,6 @@
 package org.apache.apex.adapters.spark.operators;
 
 import com.datatorrent.api.Context;
-import org.apache.apex.adapters.spark.MyBaseOperator;
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import org.slf4j.Logger;
@@ -14,10 +13,10 @@ import java.util.HashMap;
  * Created by harsh on 21/12/16.
  */
 @DefaultSerializer(JavaSerializer.class)
-public class CountByVlaueOperator<K,V> extends MyBaseOperator implements Serializable {
+public class CountByVlaueOperatorSerializable<K,V> extends BaseOperatorSerializable implements Serializable {
     private boolean done = false;
 
-    public CountByVlaueOperator() {
+    public CountByVlaueOperatorSerializable() {
 
     }
     @Override
@@ -39,7 +38,7 @@ public class CountByVlaueOperator<K,V> extends MyBaseOperator implements Seriali
         }
     };
 
-    Logger log = LoggerFactory.getLogger(CountByVlaueOperator.class);
+    Logger log = LoggerFactory.getLogger(CountByVlaueOperatorSerializable.class);
     public static transient HashMap<Object, Long> hashMap;
     @Override
     public void setup(Context.OperatorContext context) {

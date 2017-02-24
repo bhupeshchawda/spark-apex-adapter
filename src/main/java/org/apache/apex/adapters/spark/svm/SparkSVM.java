@@ -1,4 +1,4 @@
-package org.apache.apex.adapters.spark.algorithmspark.javaexamples;
+package org.apache.apex.adapters.spark.svm;
 
 /**
  * Created by anurag on 27/12/16.
@@ -16,7 +16,7 @@ import org.apache.spark.mllib.regression.LabeledPoint;
 import org.apache.spark.mllib.util.MLUtils;
 import scala.Tuple2;
 
-public class LinearSupportVectorMachineTest {
+public class SparkSVM {
         public static void main(String[] args){
             SparkContext sc= new SparkContext(new SparkConf().setMaster("local[2]").setAppName("Linear SVM"));
             String path = AlgorithmTest.diabetes();

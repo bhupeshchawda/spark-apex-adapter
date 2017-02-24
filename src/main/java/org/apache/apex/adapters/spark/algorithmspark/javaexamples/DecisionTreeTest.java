@@ -41,7 +41,7 @@ public class DecisionTreeTest {
         Integer maxDepth = 5;
         Integer maxBins = 32;
 
-// Train a DecisionTreeJava model for classification.
+// Train a DecisionTree model for classification.
         final DecisionTreeModel model = DecisionTree.trainClassifier(trainingData, numClasses,
                 categoricalFeaturesInfo, impurity, maxDepth, maxBins);
 

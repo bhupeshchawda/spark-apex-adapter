@@ -1,7 +1,6 @@
 package org.apache.apex.adapters.spark.operators;
 
 import com.datatorrent.api.Context;
-import org.apache.apex.adapters.spark.MyBaseOperator;
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import org.slf4j.Logger;
@@ -10,7 +9,7 @@ import scala.Function1;
 
 import java.io.Serializable;
 @DefaultSerializer(JavaSerializer.class)
-public class FilterOperator<T> extends MyBaseOperator implements Serializable
+public class FilterOperatorSerializable<T> extends BaseOperatorSerializable implements Serializable
 {
     int id=0;
     @Override
@@ -18,7 +17,7 @@ public class FilterOperator<T> extends MyBaseOperator implements Serializable
         super.setup(context);
         id=context.getId();
     }
-    Logger log = LoggerFactory.getLogger(FilterOperator.class);
+    Logger log = LoggerFactory.getLogger(FilterOperatorSerializable.class);
     public Function1 f;
   public final  DefaultInputPortSerializable<Object> input = new DefaultInputPortSerializable<Object>() {
     @Override

@@ -1,7 +1,6 @@
 package org.apache.apex.adapters.spark.operators;
 
 import com.datatorrent.api.Context;
-import org.apache.apex.adapters.spark.MyBaseOperator;
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 
@@ -12,10 +11,10 @@ import java.util.ArrayList;
  * Created by anurag on 28/12/16.
  */
 @DefaultSerializer(JavaSerializer.class)
-public class TakeOperator<T> extends MyBaseOperator<T> implements Serializable {
+public class TakeOperatorSerializable<T> extends BaseOperatorSerializable<T> implements Serializable {
     private boolean emitted;
 
-    public TakeOperator(){}
+    public TakeOperatorSerializable(){}
     public  ArrayList<Object> elements ;
     public  int count;
 
