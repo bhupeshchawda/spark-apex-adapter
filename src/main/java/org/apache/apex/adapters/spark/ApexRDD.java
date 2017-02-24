@@ -349,6 +349,38 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         Map<T, Object> map = (Map<T, Object>) readFromAlluxio("countByValueOutput");
         return map;
     }
+
+    public void foreach(VoidFunction<T> voidFunction) {
+        MyDAG cloneDag= (MyDAG) SerializationUtils.clone(this.dag);
+        DefaultOutputPortSerializable currentOutputPort = getCurrentOutputPort(cloneDag);
+        ForeachOpeator foreach = cloneDag.addOperator(System.currentTimeMillis()+" ForEachOperator",new ForeachOpeator());
+        getBaseInputOperator(cloneDag).appName=forEachApp;
+
+        foreach.voidFunction = voidFunction;
+        cloneDag.addStream(System.currentTimeMillis()+" ForEachStream", currentOutputPort, foreach.input);
+        FileWriteOperator writer = cloneDag.addOperator( System.currentTimeMillis()+" FileWriter", new SimpleFileWriteOperator());
+
+        writer.setAbsoluteFilePath("chiFilteredData");
+
+        cloneDag.addStream(System.currentTimeMillis()+"FileWriterStream", foreach.output, writer.input);
+
+        try {
+            launch(cloneDag,3000,"forEach",launchOnCluster);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        while(!successFileExists()) {
+            log.info("Waiting for the _SUCCESS file");
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("All dags launched Successfully...");
+
+    }
+
     @Override
     public Iterator<T> compute(Partition arg0, TaskContext arg1) {
         // TODO Auto-generated method stub
