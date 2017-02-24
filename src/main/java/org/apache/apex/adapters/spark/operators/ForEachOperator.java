@@ -1,11 +1,11 @@
 package org.apache.apex.adapters.spark.operators;
+
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.spark.api.java.function.Function;
-import scala.Function1;
 
 import java.io.Serializable;
 
@@ -13,11 +13,11 @@ import java.io.Serializable;
  * Created by harsh on 27/12/16.
  */
 @DefaultSerializer(JavaSerializer.class)
-public class ForeachOpeator<T> extends BaseOperatorSerializable<T> implements Serializable {
-    public ForeachOpeator(){}
+public class ForEachOperator<T> extends BaseOperatorSerializable<T> implements Serializable {
+    public ForEachOperator(){}
     public Function f;
     public VoidFunction voidFunction;
-    Logger log = LoggerFactory.getLogger(ForeachOpeator.class);
+    Logger log = LoggerFactory.getLogger(ForEachOperator.class);
     public DefaultInputPortSerializable<T> input = new DefaultInputPortSerializable<T>() {
         @Override
         public void process(T tuple) {

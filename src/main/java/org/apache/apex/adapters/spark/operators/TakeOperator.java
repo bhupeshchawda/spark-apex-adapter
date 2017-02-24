@@ -11,10 +11,10 @@ import java.util.ArrayList;
  * Created by anurag on 28/12/16.
  */
 @DefaultSerializer(JavaSerializer.class)
-public class TakeOperatorSerializable<T> extends BaseOperatorSerializable<T> implements Serializable {
+public class TakeOperator<T> extends BaseOperatorSerializable<T> implements Serializable {
     private boolean emitted;
 
-    public TakeOperatorSerializable(){}
+    public TakeOperator(){}
     public  ArrayList<Object> elements ;
     public  int count;
 

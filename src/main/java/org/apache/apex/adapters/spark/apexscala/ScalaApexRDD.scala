@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
 
   def this(@transient oneParent: RDD[_]) =
     this(oneParent.context, List(new OneToOneDependency(oneParent)))
-  val dag=new MyDAG()
+  val dag=new SerializableDAG()
 
   def getFunc[U](f: (Iterator[T]) => Iterator[U]): (TaskContext, Int, Iterator[T]) => Iterator[U] = {
     val func = (context: TaskContext, index: Int, iter: Iterator[T]) => f(iter)
@@ -107,7 +107,7 @@ import scala.reflect.ClassTag
 ////   a.toArray
 //    return scala.collection.JavaConversions.asScalaBuffer(a).toArray
 //  }
-def getCurrentOutputPort(cloneDag: MyDAG): DefaultOutputPortSerializable[_] = {
+def getCurrentOutputPort(cloneDag: SerializableDAG): DefaultOutputPortSerializable[_] = {
   try {
     log.debug("Last operator in the Dag {}", this.asInstanceOf[ApexRDD[T]].getDag().getLastOperatorName)
     val currentOperator = cloneDag.getOperatorMeta(cloneDag.getLastOperatorName).getOperator.asInstanceOf[BaseOperatorSerializable[_]]
@@ -122,10 +122,10 @@ def getCurrentOutputPort(cloneDag: MyDAG): DefaultOutputPortSerializable[_] = {
 //
 //  override def take(num: Int): Array[T] = {
 //
-//  val cloneDag = SerializationUtils.clone(this.asInstanceOf[ApexRDD[T]].getDag()).asInstanceOf[MyDAG]
+//  val cloneDag = SerializationUtils.clone(this.asInstanceOf[ApexRDD[T]].getDag()).asInstanceOf[SerializableDAG]
 //
 //  val currentOutputPort = getCurrentOutputPort(cloneDag)
-//  val takeOperator = cloneDag.addOperator(System.currentTimeMillis + " Take Operator", classOf[TakeOperatorSerializable[T]])
+//  val takeOperator = cloneDag.addOperator(System.currentTimeMillis + " Take Operator", classOf[TakeOperator[T]])
 //  takeOperator.count = num
 //    var ambiguous = cloneDag.getClass.getMethods.filter(_.getName == "addStream")
 //    var wanted = ambiguous.find(_.getParameterTypes.length == 3).get
@@ -199,7 +199,7 @@ def getCurrentOutputPort(cloneDag: MyDAG): DefaultOutputPortSerializable[_] = {
   @throws[IOException]
   @throws[AlluxioException]
   @throws[InterruptedException]
-  def runDagLocal(cloneDag: MyDAG, runMillis: Long, name: String) {
+  def runDagLocal(cloneDag: SerializableDAG, runMillis: Long, name: String) {
     cloneDag.validate()
     log.info("DAG successfully validated {}", name)
     val lma = LocalMode.newInstance

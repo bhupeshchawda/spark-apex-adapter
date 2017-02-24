@@ -5,11 +5,11 @@ import com.esotericsoftware.kryo.serializers.JavaSerializer;
 
 import java.io.Serializable;
 @DefaultSerializer(JavaSerializer.class)
-public class CountOperatorSerializable<T> extends BaseOperatorSerializable implements Serializable
+public class CountOperator<T> extends BaseOperatorSerializable implements Serializable
 {
     private boolean done = false;
 
-    public CountOperatorSerializable() {
+    public CountOperator() {
     }
 
     public DefaultOutputPortSerializable<Integer> getCountOutputPort() {

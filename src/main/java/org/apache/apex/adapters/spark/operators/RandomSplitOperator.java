@@ -13,7 +13,7 @@ import java.util.BitSet;
  * Created by harsh on 8/12/16.
  */
 @DefaultSerializer(JavaSerializer.class)
-public class RandomSplitOperatorSerializable<T> extends BaseOperatorSerializable implements Serializable {
+public class RandomSplitOperator<T> extends BaseOperatorSerializable implements Serializable {
 
     public double[] weights;
 
@@ -33,7 +33,7 @@ public class RandomSplitOperatorSerializable<T> extends BaseOperatorSerializable
 
     public boolean done= false;
     private int index=0;
-    Logger log = LoggerFactory.getLogger(RandomSplitOperatorSerializable.class);
+    Logger log = LoggerFactory.getLogger(RandomSplitOperator.class);
 
     public DefaultInputPortSerializable<T> input = new DefaultInputPortSerializable<T>() {
         @Override

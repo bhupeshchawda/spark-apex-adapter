@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 @DefaultSerializer(JavaSerializer.class)
-public class ReduceOperatorSerializable<T> extends BaseOperatorSerializable implements Serializable
+public class ReduceOperator<T> extends BaseOperatorSerializable implements Serializable
 {
   public Function2<T,T,T> f;
   public Function1 f1;
@@ -20,7 +20,7 @@ public class ReduceOperatorSerializable<T> extends BaseOperatorSerializable impl
     ArrayList<T> rddData = new ArrayList<>();
     public TaskContext taskContext;
     public Object object;
-  public ReduceOperatorSerializable() {
+  public ReduceOperator() {
 
   }
 

@@ -1,10 +1,11 @@
 package org.apache.apex.adapters.spark.hypothesis;
 
-import com.datatorrent.example.ApexConf;
-import com.datatorrent.example.ApexContext;
-import com.datatorrent.example.ApexRDD;
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
+import org.apache.apex.adapters.spark.ApexConf;
+import org.apache.apex.adapters.spark.ApexContext;
+import org.apache.apex.adapters.spark.ApexRDD;
+import org.apache.apex.adapters.spark.properties.PathProperties;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.mllib.linalg.Matrices;
 import org.apache.spark.mllib.linalg.Matrix;

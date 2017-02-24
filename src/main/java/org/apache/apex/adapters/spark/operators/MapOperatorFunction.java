@@ -3,37 +3,42 @@ package org.apache.apex.adapters.spark.operators;
 import com.datatorrent.api.Context;
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
+import org.apache.spark.api.java.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Function1;
 
 import java.io.Serializable;
 
 @DefaultSerializer(JavaSerializer.class)
-public class MapOperatorSerializable<T,U> extends BaseOperatorSerializable implements Serializable {
+public class MapOperatorFunction<T> extends BaseOperatorSerializable implements Serializable {
     int id=0;
     @Override
     public void setup(Context.OperatorContext context) {
         super.setup(context);
+        id=context.getId();
+
     }
-    Logger log = LoggerFactory.getLogger(MapOperatorSerializable.class);
-    public Function1<T,U> f;
-    public DefaultOutputPortSerializable<U> output = new DefaultOutputPortSerializable<>();
+    Logger log = LoggerFactory.getLogger(MapOperatorFunction.class);
+    public Function f;
+    public DefaultOutputPortSerializable<T> output = new DefaultOutputPortSerializable<T>();
     public DefaultInputPortSerializable<T> input = new DefaultInputPortSerializable<T>() {
         @Override
         public void process(T tuple) {
+            try {
 
-                try {
-                    output.emit( f.apply(tuple));
-                } catch (Exception e){
-                    log.debug("Exception Occured Due to {} ",tuple);
+                output.emit((T) f.call(tuple));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                log.debug("Exception Occured Due to {} ",tuple);
+                output.emit(tuple);
+            }
 
-                }
         }
     };
 
 
-    public DefaultOutputPortSerializable<U> getOutputPort() {
+    public DefaultOutputPortSerializable<T> getOutputPort() {
         return this.output;
     }
 
@@ -46,7 +51,7 @@ public class MapOperatorSerializable<T,U> extends BaseOperatorSerializable imple
     }
 
     public DefaultInputPortSerializable<T> getInputPort() {
-        return this.input;
+        return  this.input;
     }
 
     public boolean isInputPortOpen = true;

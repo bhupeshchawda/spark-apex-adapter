@@ -9,7 +9,7 @@ import scala.Function1;
 
 import java.io.Serializable;
 @DefaultSerializer(JavaSerializer.class)
-public class FilterOperatorSerializable<T> extends BaseOperatorSerializable implements Serializable
+public class FilterOperator<T> extends BaseOperatorSerializable implements Serializable
 {
     int id=0;
     @Override
@@ -17,7 +17,7 @@ public class FilterOperatorSerializable<T> extends BaseOperatorSerializable impl
         super.setup(context);
         id=context.getId();
     }
-    Logger log = LoggerFactory.getLogger(FilterOperatorSerializable.class);
+    Logger log = LoggerFactory.getLogger(FilterOperator.class);
     public Function1 f;
   public final  DefaultInputPortSerializable<Object> input = new DefaultInputPortSerializable<Object>() {
     @Override

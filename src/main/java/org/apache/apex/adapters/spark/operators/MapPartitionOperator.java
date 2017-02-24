@@ -14,7 +14,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 @DefaultSerializer(JavaSerializer.class)
-public class MapPartitionOperatorSerializable<T,U> extends BaseOperatorSerializable implements Serializable {
+public class MapPartitionOperator<T,U> extends BaseOperatorSerializable implements Serializable {
     int id=0;
     ArrayList<T> rddData = new ArrayList<>();
     public TaskContext taskContext;
@@ -33,7 +33,7 @@ public class MapPartitionOperatorSerializable<T,U> extends BaseOperatorSerializa
 
     }
 
-    Logger log = LoggerFactory.getLogger(MapPartitionOperatorSerializable.class);
+    Logger log = LoggerFactory.getLogger(MapPartitionOperator.class);
     public Function1<Iterator<T>, Iterator<U>> f;
     public DefaultOutputPortSerializable<U> output = new DefaultOutputPortSerializable();
     public DefaultInputPortSerializable<T> input = new DefaultInputPortSerializable<T>() {

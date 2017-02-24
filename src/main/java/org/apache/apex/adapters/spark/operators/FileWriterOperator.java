@@ -87,7 +87,6 @@ public class FileWriterOperator extends BaseOperator
         public void process(Object tuple)
         {
             try {
-                System.out.println("Writing to file");
                 if(!isSerialized) {
                     writeFileToAlluxio(absoluteFilePath, tuple);
                     isSerialized=true;

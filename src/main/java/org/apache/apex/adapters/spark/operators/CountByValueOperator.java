@@ -13,10 +13,10 @@ import java.util.HashMap;
  * Created by harsh on 21/12/16.
  */
 @DefaultSerializer(JavaSerializer.class)
-public class CountByValueOperatorSerializable<K,V> extends BaseOperatorSerializable implements Serializable {
+public class CountByValueOperator<K,V> extends BaseOperatorSerializable implements Serializable {
     private boolean done = false;
 
-    public CountByValueOperatorSerializable() {
+    public CountByValueOperator() {
 
     }
     @Override
@@ -38,7 +38,7 @@ public class CountByValueOperatorSerializable<K,V> extends BaseOperatorSerializa
         }
     };
 
-    Logger log = LoggerFactory.getLogger(CountByValueOperatorSerializable.class);
+    Logger log = LoggerFactory.getLogger(CountByValueOperator.class);
     public static transient HashMap<Object, Long> hashMap;
     @Override
     public void setup(Context.OperatorContext context) {

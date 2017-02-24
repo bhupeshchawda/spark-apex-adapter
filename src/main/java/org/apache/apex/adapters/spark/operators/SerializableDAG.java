@@ -13,8 +13,8 @@ import java.util.Stack;
  */
 
 @DefaultSerializer(JavaSerializer.class)
-public class MyDAG extends LogicalPlan implements Serializable{
-    public MyDAG(){}
+public class SerializableDAG extends LogicalPlan implements Serializable{
+    public SerializableDAG(){}
 
     public  String getLastOperatorName() {
         return lastOperatorName;
