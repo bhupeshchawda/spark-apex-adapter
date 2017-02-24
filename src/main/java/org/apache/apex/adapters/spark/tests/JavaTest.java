@@ -95,11 +95,13 @@ public class JavaTest<T> {
         return ois.readObject();
     }
     public static void main(String []args) throws IOException, AlluxioException, ClassNotFoundException {
-        Person p =new Person("Anurag",22);
-        writeFileToAlluxio("/user/anurag/p.ser",p);
-
-        String path ="datatorrent/apps/application_1484098060070_0078";
-//        copyJars("hdfs://localhost:54310/user/anurag/datatorrent/apps/application_1484098060070_0078");
-        readFile("hdfs://localhost:54310/user/anurag/diabetes.txt");
+//        Person p =new Person("Anurag",22);
+//        writeFileToAlluxio("/user/anurag/p.ser",p);
+//
+//        String path ="datatorrent/apps/application_1484098060070_0078";
+////        copyJars("hdfs://localhost:54310/user/anurag/datatorrent/apps/application_1484098060070_0078");
+//        readFile("hdfs://localhost:54310/user/anurag/diabetes.txt");
+        String path = System.getProperty("user.dir")+"/"+"path.properties";
+        System.out.println(path);
     }
 }

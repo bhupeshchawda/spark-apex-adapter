@@ -1,40 +1,31 @@
 package org.apache.apex.adapters.spark.linearregression;
 
+import junit.framework.Assert;
 import org.apache.apex.adapters.spark.ApexConf;
 import org.apache.apex.adapters.spark.ApexContext;
 import org.apache.apex.adapters.spark.ApexRDD;
+import org.apache.apex.adapters.spark.properties.PathProperties;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.regression.LabeledPoint;
 import org.apache.spark.mllib.regression.LinearRegressionModel;
 import org.apache.spark.mllib.regression.LinearRegressionWithSGD;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 /**
  * Created by krushika on 22/2/17.
  */
 public class LinearRegressionTrain {
     public static void main(String[] args) {
-        Properties properties = new Properties();
-        InputStream input;
-        try {
-            input = new FileInputStream("/home/anurag/spark-apex/spark-example/src/main/java/com/datatorrent/example/properties/svm.properties");
-            properties.load(input);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        PathProperties properties = new PathProperties();
+        properties.load("properties/path.properties");
         ApexConf conf = new ApexConf().setAppName("Linear Regression Example").setMaster("local");
         ApexContext sc = new ApexContext(conf);
 
 
         // Load and parse the data
-        String path = "/lpsa.data";
+        String path = properties.getProperty("lrTrain");
         ApexRDD<String> data = (ApexRDD<String>) sc.textFile(path, 1);
+        Assert.assertTrue(false);
         ApexRDD<LabeledPoint> parsedData = (ApexRDD<LabeledPoint>) data.map(
                 new Function<String, LabeledPoint>() {
                     public LabeledPoint call(String line) {

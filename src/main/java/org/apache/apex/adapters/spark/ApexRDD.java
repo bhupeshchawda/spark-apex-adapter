@@ -4,9 +4,9 @@ import alluxio.AlluxioURI;
 import alluxio.client.file.FileInStream;
 import alluxio.exception.AlluxioException;
 import com.datatorrent.api.LocalMode;
+import com.datatorrent.stram.client.StramAppLauncher;
 import org.apache.apex.adapters.spark.apexscala.ApexPartition;
 import org.apache.apex.adapters.spark.apexscala.ScalaApexRDD;
-import com.datatorrent.stram.client.StramAppLauncher;
 import org.apache.apex.adapters.spark.operators.*;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -36,8 +36,10 @@ import scala.math.Ordering;
 import scala.reflect.ClassTag;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Properties;
+import java.util.Random;
 
 public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
     private static final long serialVersionUID = -3545979419189338756L;
@@ -53,7 +55,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
     public Partition[] partitions_=getPartitions();
     protected Option<Partitioner> partitioner = (Option<Partitioner>) new ApexRDDOptionPartitioner();
     Logger log = LoggerFactory.getLogger(ApexRDD.class);
-    boolean launchOnCluster=true;
+    boolean launchOnCluster=false;
 
 
     public ApexRDD(RDD<T> rdd, ClassTag<T> classTag) {

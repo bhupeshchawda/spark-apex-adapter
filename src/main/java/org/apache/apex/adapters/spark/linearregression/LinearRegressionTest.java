@@ -1,5 +1,6 @@
 package org.apache.apex.adapters.spark.linearregression;
 
+import org.apache.apex.adapters.spark.properties.PathProperties;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaDoubleRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -10,24 +11,13 @@ import org.apache.spark.mllib.regression.LabeledPoint;
 import org.apache.spark.mllib.regression.LinearRegressionModel;
 import scala.Tuple2;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 /**
  * Created by krushika on 22/2/17.
  */
 public class LinearRegressionTest {
     public static void main(String[] args) {
-        Properties properties = new Properties();
-        InputStream input;
-        try {
-            input = new FileInputStream("/home/krushika/dev/spark-apex/spark-example/src/main/java/com/datatorrent/example/properties/svm.properties");
-            properties.load(input);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        PathProperties properties = new PathProperties();
+        properties.load("properties/path.properties");
 
         SparkConf conf = new SparkConf().setAppName("Linear Regression Test").setMaster("local");
         JavaSparkContext jsc = new JavaSparkContext(conf);

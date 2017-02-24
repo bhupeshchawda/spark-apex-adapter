@@ -3,35 +3,24 @@ package org.apache.apex.adapters.spark.svm;
 import org.apache.apex.adapters.spark.ApexConf;
 import org.apache.apex.adapters.spark.ApexContext;
 import org.apache.apex.adapters.spark.ApexRDD;
+import org.apache.apex.adapters.spark.properties.PathProperties;
 import org.apache.spark.mllib.classification.SVMModel;
 import org.apache.spark.mllib.classification.SVMWithSGD;
 import org.apache.spark.mllib.regression.LabeledPoint;
 import org.apache.spark.mllib.util.MLUtils;
 import scala.reflect.ClassTag;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 /**
  * Created by krushika on 5/1/17.
  */
 public class SVMTrain {
     public static void main(String[] args){
-        Properties properties = new Properties();
-        InputStream input;
-        try{
-            input = new FileInputStream("/home/anurag/spark-apex/spark-example/src/main/java/com/datatorrent/example/properties/svm.properties");
-            properties.load(input);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        PathProperties properties = new PathProperties();
+        properties.load("properties/path.properties");
         ApexContext sc= new ApexContext(new ApexConf().setMaster("local[2]").setAppName("Linear SVM"));
         ClassTag<LabeledPoint> tag = scala.reflect.ClassTag$.MODULE$.apply(LabeledPoint.class);
-        ApexRDD<LabeledPoint> data = new ApexRDD<>(MLUtils.loadLibSVMFile(sc, "/user/anurag/sample_libsvm_data.txt"),tag);
-
+        String path = properties.getProperty("svmTrain");
+        ApexRDD<LabeledPoint> data = new ApexRDD<>(MLUtils.loadLibSVMFile(sc, path),tag);
         int numIterations = 100;
         final SVMModel model = SVMWithSGD.train(data, numIterations);
 

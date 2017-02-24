@@ -1,5 +1,6 @@
 package org.apache.apex.adapters.spark.svm;
 
+import org.apache.apex.adapters.spark.properties.PathProperties;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
@@ -11,25 +12,13 @@ import org.apache.spark.mllib.util.MLUtils;
 import scala.Tuple2;
 import scala.reflect.ClassTag;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 /**
  * Created by krushika on 5/1/17.
  */
 public class SVMTest {
     public static void main(String[] args) {
-        Properties properties = new Properties();
-        InputStream input;
-        try {
-            input = new FileInputStream("/home/krushika/dev/spark-apex/spark-example/src/main/java/com/datatorrent/example/properties/svm.properties");
-            properties.load(input);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        PathProperties properties = new PathProperties();
+        properties.load("properties/path.properties");
         SparkContext sc= new SparkContext(new SparkConf().setMaster("local").setAppName("Linear SVM Testing Module"));
         ClassTag<LabeledPoint> tag = scala.reflect.ClassTag$.MODULE$.apply(LabeledPoint.class);
         JavaRDD<LabeledPoint> data = new JavaRDD<>(MLUtils.loadLibSVMFile(sc, properties.getProperty("testData")),tag);
