@@ -37,7 +37,7 @@ public class ZipOperator<T,U> extends BaseOperatorSerializable implements Serial
     };
     @Override
     public DefaultInputPortSerializable<Object> getInputPort() {
-        return null;
+        return (DefaultInputPortSerializable<Object>) this.input;
     }
 
     @Override

@@ -32,7 +32,7 @@ public class FilterOperator<T> extends BaseOperatorSerializable implements Seria
 
     @Override
     public DefaultInputPortSerializable<T> getInputPort() {
-        return null;
+        return (DefaultInputPortSerializable<T>) this.input;
     }
 
     public DefaultOutputPortSerializable<Object> getOutputPort(){

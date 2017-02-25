@@ -44,7 +44,7 @@ public class TakeOperator<T> extends BaseOperatorSerializable<T> implements Seri
     public final  DefaultOutputPortSerializable<Object> output = new DefaultOutputPortSerializable<Object>();
     @Override
     public DefaultInputPortSerializable getInputPort() {
-        return null;
+        return this.input;
     }
 
     @Override

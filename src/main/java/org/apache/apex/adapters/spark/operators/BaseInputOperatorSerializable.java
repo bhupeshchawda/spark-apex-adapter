@@ -22,6 +22,7 @@ import java.io.Serializable;
 public class BaseInputOperatorSerializable<T> extends BaseOperatorSerializable<T> implements InputOperator,Serializable {
     private transient BufferedReader br;
     public String path;
+    public int minPartitions =1;
 
     public BaseInputOperatorSerializable(){
 

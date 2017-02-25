@@ -24,11 +24,13 @@ public class ApexContext extends SparkContext implements Serializable
   {
     ApexRDD rdd = new ApexRDD<>(this);
     BaseInputOperatorSerializable fileInput = rdd.getDag().addOperator(System.currentTimeMillis()+ " Input ", BaseInputOperatorSerializable.class);
+    //InputSplitOperator fileInput = rdd.getDag().addOperator(System.currentTimeMillis()+ " Input ", InputSplitOperator.class);
     rdd.currentOperator =  fileInput;
     rdd.currentOperatorType = ApexRDD.OperatorType.INPUT;
     rdd.currentOutputPort =  fileInput.output;
     rdd.controlOutput =fileInput.controlOut;
     fileInput.path = path;
+    fileInput.minPartitions=minPartitions;
 
     return rdd;
   }

@@ -4,7 +4,7 @@ import alluxio.AlluxioURI;
 import alluxio.exception.AlluxioException;
 import com.datatorrent.api.Context;
 import com.datatorrent.api.LocalMode;
-import com.datatorrent.lib.codec.JavaSerializationStreamCodec;
+import com.datatorrent.common.partitioner.StatelessPartitioner;
 import com.datatorrent.stram.client.StramAppLauncher;
 import org.apache.apex.adapters.spark.apexscala.ApexPartition;
 import org.apache.apex.adapters.spark.apexscala.ScalaApexRDD;
@@ -40,6 +40,8 @@ import java.io.Serializable;
 import java.lang.Long;
 import java.util.*;
 
+import static com.datatorrent.api.Context.OperatorContext.PARTITIONER;
+
 public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
     private static final long serialVersionUID = -3545979419189338756L;
     public static ApexContext context;
@@ -69,32 +71,6 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         dag = new SerializableDAG();
         context=ac;
         _sc=ac;
-    }
-
-    public static Integer fileReader(String path){
-        BufferedReader br = null;
-        FileReader fr = null;
-        try{
-            fr = new FileReader(path);
-            br = new BufferedReader(fr);
-            String line;
-            br = new BufferedReader(new FileReader(path));
-            while((line = br.readLine())!=null){
-                return Integer.valueOf(line);
-            }
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }finally {
-            try{
-                if(br!=null)
-                    br.close();
-                if(fr!=null)
-                    fr.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
     }
 
     @Override
@@ -136,6 +112,16 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         BaseInputOperatorSerializable currentOperator= (BaseInputOperatorSerializable) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
         return currentOperator.getControlOut();
     }
+    public InputSplitOperator<T> getInputSplitOperator(SerializableDAG cloneDag){
+        return (InputSplitOperator) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
+    }
+    public void enableParallelPartition(BaseOperatorSerializable currentOperator, SerializableDAG cloneDag){
+        int minPartitions = getInputSplitOperator(cloneDag).minPartitions;
+        if(minPartitions > 1) {
+            cloneDag.setAttribute(currentOperator, PARTITIONER, new StatelessPartitioner<BaseInputOperatorSerializable>(minPartitions));
+            cloneDag.setInputPortAttribute(currentOperator.getInputPort(), Context.PortContext.PARTITION_PARALLEL, true);
+        }
+    }
 
     public <U> RDD<U> map(Function <T,U> f){
 
@@ -147,6 +133,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
 //        ScalaApexRDD$.MODULE$.test((ScalaApexRDD<Tuple2<Object, Object>>) this, (ClassTag<Object>) evidence$3,null,null);
         cloneDag.addStream( System.currentTimeMillis()+ " MapStream Function", currentOutputPort, m1.input);
        // cloneDag.setInputPortAttribute(m1.input, Context.PortContext.STREAM_CODEC, new JavaSerializationStreamCodec());
+        enableParallelPartition(m1,cloneDag);
         ApexRDD<U> temp= (ApexRDD<U>) SerializationUtils.clone(this);
         temp.dag=cloneDag;
         return temp;
@@ -215,9 +202,8 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         DefaultOutputPortSerializable currentOutputPort = getCurrentOutputPort(cloneDag);
         MapOperator m1 = cloneDag.addOperator(System.currentTimeMillis()+ " Map " , new MapOperator());
         m1.f= f;
-//        ScalaApexRDD$.MODULE$.test((ScalaApexRDD<Tuple2<Object, Object>>) this, (ClassTag<Object>) evidence$3,null,null);
         cloneDag.addStream( System.currentTimeMillis()+ " MapStream ", currentOutputPort, m1.input);
-        //cloneDag.setInputPortAttribute(m1.input, Context.PortContext.STREAM_CODEC, new JavaSerializationStreamCodec());
+        enableParallelPartition(m1,cloneDag);
         ApexRDD<U> temp= (ApexRDD<U>) createClone(cloneDag);
         return temp;
     }
@@ -229,6 +215,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         FilterOperator filterOperator = cloneDag.addOperator(System.currentTimeMillis()+ " Filter", FilterOperator.class);
         filterOperator.f = context.clean(f,true);
         cloneDag.addStream(System.currentTimeMillis()+ " FilterStream " + 1, currentOutputPort, filterOperator.input);
+        enableParallelPartition(filterOperator,cloneDag);
         return createClone(cloneDag);
     }
 
@@ -256,6 +243,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         mapPartitionOperator.f = f;
         cloneDag.addStream( System.currentTimeMillis()+ " MapPartitionStream ", currentOutputPort, mapPartitionOperator.input);
        // cloneDag.setInputPortAttribute(m1.input, Context.PortContext.STREAM_CODEC, new JavaSerializationStreamCodec());
+        enableParallelPartition(mapPartitionOperator,cloneDag);
         ApexRDD<U> temp= (ApexRDD<U>) createClone(cloneDag);
         return temp;
     }
@@ -388,10 +376,6 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         cloneDag.validate();
         log.debug("DAG successfully validated");
 
-        LocalMode lma = LocalMode.newInstance();
-        Configuration conf = new Configuration(false);
-        GenericApplication app = new GenericApplication();
-        app.setDag(cloneDag);
         try {
             launch(cloneDag,3000,"collect",launchOnCluster);
         } catch (Exception e) {
@@ -437,17 +421,6 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         }
 
         Long count= (Long) ReadFromFS.read("count");
-//        try {
-//            while(!successFileExists()) {
-//                Thread.sleep(5);
-//                System.out.println("SUCCESS comes to those who sleep");
-//            }
-//
-//
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-
         if(count==null)
             return 0L;
         deleteSUCCESSFile();
@@ -484,11 +457,12 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         other.collect();
         SerializableDAG cloneDag = (SerializableDAG) SerializationUtils.clone(this.dag);
         DefaultOutputPortSerializable currentOutputPort = getCurrentOutputPort(cloneDag);
-        ZipOperator<T,U> z = cloneDag.addOperator(System.currentTimeMillis()+ " ZipOperator " , new ZipOperator<T,U>());
-        z.other= Arrays.asList((T[]) other.collect());
-        z.count=z.other.size();
-        cloneDag.addStream( System.currentTimeMillis()+ " ZipOperator ", currentOutputPort, z.input);
-        cloneDag.setInputPortAttribute(z.input, Context.PortContext.STREAM_CODEC, new JavaSerializationStreamCodec());
+        ZipOperator<T,U> zipOperator = cloneDag.addOperator(System.currentTimeMillis()+ " ZipOperator " , new ZipOperator<T,U>());
+        zipOperator.other= Arrays.asList((T[]) other.collect());
+        zipOperator.count=zipOperator.other.size();
+        cloneDag.addStream( System.currentTimeMillis()+ " ZipOperator ", currentOutputPort, zipOperator.input);
+        enableParallelPartition(zipOperator,cloneDag);
+        //cloneDag.setInputPortAttribute(z.input, Context.PortContext.STREAM_CODEC, new JavaSerializationStreamCodec());
         ApexRDD<Tuple2<T,U>> temp= (ApexRDD<Tuple2<T,U>>) SerializationUtils.clone(this);
         temp.dag=cloneDag;
         return temp;
@@ -504,6 +478,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
 //        ScalaApexRDD$.MODULE$.test((ScalaApexRDD<Tuple2<Object, Object>>) this, (ClassTag<Object>) evidence$3,null,null);
         cloneDag.addStream( System.currentTimeMillis()+ " SampleOperatorStream ", currentOutputPort, sampleOperator.input);
         //cloneDag.setInputPortAttribute(m1.input, Context.PortContext.STREAM_CODEC, new JavaSerializationStreamCodec());
+        enableParallelPartition(sampleOperator,cloneDag);
         return createClone(cloneDag);
     }
 
