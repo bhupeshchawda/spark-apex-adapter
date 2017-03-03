@@ -1,6 +1,5 @@
 package org.apache.apex.adapters.spark;
 
-import alluxio.AlluxioURI;
 import alluxio.exception.AlluxioException;
 import com.datatorrent.api.Context;
 import com.datatorrent.api.LocalMode;
@@ -10,6 +9,7 @@ import org.apache.apex.adapters.spark.apexscala.ApexPartition;
 import org.apache.apex.adapters.spark.apexscala.ScalaApexRDD;
 import org.apache.apex.adapters.spark.io.ReadFromFS;
 import org.apache.apex.adapters.spark.operators.*;
+import org.apache.apex.adapters.spark.properties.PathProperties;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -41,6 +41,7 @@ import java.lang.Long;
 import java.util.*;
 
 import static com.datatorrent.api.Context.OperatorContext.PARTITIONER;
+import static org.apache.apex.adapters.spark.io.WriteToFS.deleteSUCCESSFile;
 
 public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
     private static final long serialVersionUID = -3545979419189338756L;
@@ -56,7 +57,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
     public Partition[] partitions_=getPartitions();
     protected Option<Partitioner> partitioner = (Option<Partitioner>) new ApexRDDOptionPartitioner();
     Logger log = LoggerFactory.getLogger(ApexRDD.class);
-    boolean launchOnCluster=false;
+    boolean launchOnCluster=true;
 
 
     public ApexRDD(RDD<T> rdd, ClassTag<T> classTag) {
@@ -109,8 +110,9 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         return currentOperator.getInputPort();
     }
     public DefaultOutputPortSerializable getControlOutput(SerializableDAG cloneDag){
-        BaseInputOperatorSerializable currentOperator= (BaseInputOperatorSerializable) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
-        return currentOperator.getControlOut();
+        //BaseInputOperatorSerializable currentOperator= (BaseInputOperatorSerializable) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
+        InputSplitOperator currentInputSplitOperator= (InputSplitOperator) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
+        return currentInputSplitOperator.getControlOut();
     }
     public InputSplitOperator<T> getInputSplitOperator(SerializableDAG cloneDag){
         return (InputSplitOperator) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
@@ -252,7 +254,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
     public T reduce(Function2<T, T, T> f) {
         SerializableDAG cloneDag = (SerializableDAG) SerializationUtils.clone(dag);
         DefaultOutputPortSerializable currentOutputPort = getCurrentOutputPort(cloneDag);
-        DefaultInputPortSerializable firstInputPort = getFirstInputPort(cloneDag);
+        //DefaultInputPortSerializable firstInputPort = getFirstInputPort(cloneDag);
         controlOutput= getControlOutput(cloneDag);
         ReduceOperator reduceOperator = cloneDag.addOperator(System.currentTimeMillis()+ " Reduce " , new ReduceOperator());
        // cloneDag.setInputPortAttribute(reduceOperator.input, Context.PortContext.STREAM_CODEC, new JavaSerializationStreamCodec());
@@ -499,25 +501,19 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
             runDagLocal(cloneDag,0,name);
     }
     public String getProperty(String prop){
-        Properties properties = new Properties();
-        InputStream input;
-        try {
-            input = new FileInputStream("/home/anurag/spark-apex/spark-example/src/main/resources/path.properties");
-            properties.load(input);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        PathProperties properties = new PathProperties();
         return properties.getProperty(prop);
 
     }
     public void runDag(SerializableDAG cloneDag, long runMillis, String name) throws Exception {
         cloneDag.validate();
-        String jars=getProperty("jars");
+        String jars=getProperty("hjars");
+        String appProperty =getProperty("ApexAppProperty");
         log.info("DAG successfully validated {}",name);
         Configuration conf = new Configuration(true);
         conf.set("fs.defaultFS","hdfs://localhost:54310");
         conf.set("yarn.resourcemanager.address", "localhost:8032");
-        conf.addResource(new File("/home/anurag/spark-apex/spark-example/src/main/resources/properties.xml").toURI().toURL());
+        conf.addResource(new File(appProperty).toURI().toURL());
         conf.set(StramAppLauncher.LIBJARS_CONF_KEY_NAME,jars);
         GenericApplication app = new GenericApplication();
         app.setDag(cloneDag)    ;
@@ -544,7 +540,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         c.killApplication(id);
 
         if(appId!=null)
-            deleteJars(id.toString());
+            //deleteJars(id.toString());
         appId=id.toString();
         log.info(" Address {}",conf.get("yarn.resourcemanager.address"));
     }
@@ -565,7 +561,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         log.info("Deleted jars from {}",path);
     }
     public String appId;
-    public synchronized static void deleteSUCCESSFile() {
+   /* public synchronized static void deleteSUCCESSFile() {
         try {
             alluxio.client.file.FileSystem fs = alluxio.client.file.FileSystem.Factory.get();
             AlluxioURI pathURI=new AlluxioURI("/user/anurag/spark-apex/_SUCCESS");
@@ -586,7 +582,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
             throw new RuntimeException(e);
         }
 
-    }
+    }*/
     public void     runDagLocal(SerializableDAG cloneDag, long runMillis, String name) throws IOException, AlluxioException, InterruptedException {
         cloneDag.validate();
         log.info("DAG successfully validated {}",name);

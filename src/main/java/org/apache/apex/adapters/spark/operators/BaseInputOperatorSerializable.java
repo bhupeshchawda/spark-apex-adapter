@@ -2,7 +2,6 @@ package org.apache.apex.adapters.spark.operators;
 
 import alluxio.AlluxioURI;
 import alluxio.client.file.FileInStream;
-import alluxio.exception.AlluxioException;
 import com.datatorrent.api.Context;
 import com.datatorrent.api.InputOperator;
 import com.esotericsoftware.kryo.DefaultSerializer;
@@ -11,9 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+
+import static org.apache.apex.adapters.spark.io.ReadFromFS.successFileExists;
 
 /**
  * Created by harsh on 2/12/16.
@@ -64,21 +64,17 @@ public class BaseInputOperatorSerializable<T> extends BaseOperatorSerializable<T
 
         }
     }
-    public  boolean successFileExists() throws IOException, AlluxioException {
+    /*public  boolean successFileExists() throws IOException, AlluxioException {
         alluxio.client.file.FileSystem fs = alluxio.client.file.FileSystem.Factory.get();
         AlluxioURI pathURI=new AlluxioURI("/user/anurag/spark-apex/_SUCCESS");
         return fs.exists(pathURI);
 
-    }
+    }*/
     @Override
     public void beginWindow(long windowId) {
         if(sent){
-            try {
-                if(successFileExists()) {
+            if(successFileExists()) {
 //                    throw new ShutdownException();
-                }
-            } catch (IOException | AlluxioException e) {
-                e.printStackTrace();
             }
 
 
@@ -110,7 +106,7 @@ public class BaseInputOperatorSerializable<T> extends BaseOperatorSerializable<T
     public String toString() {
         return super.toString();
     }
-    public synchronized void deleteSUCCESSFile() {
+    /*public synchronized void deleteSUCCESSFile() {
         try {
             alluxio.client.file.FileSystem fs = alluxio.client.file.FileSystem.Factory.get();
             AlluxioURI pathURI=new AlluxioURI("/user/anurag/spark-apex/_SUCCESS");
@@ -120,5 +116,5 @@ public class BaseInputOperatorSerializable<T> extends BaseOperatorSerializable<T
             e.printStackTrace();
         }
 
-    }
+    }*/
 }

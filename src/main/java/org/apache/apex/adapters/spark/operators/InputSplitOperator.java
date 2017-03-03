@@ -5,8 +5,6 @@ import com.datatorrent.api.InputOperator;
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
@@ -82,7 +80,7 @@ public class InputSplitOperator<T> extends BaseOperatorSerializable<T> implement
     @Override
     public void endWindow() {
         super.endWindow();
-        if(shutApp) {
+        /*if(shutApp) {
             shutApp = false;
             try {
                 if(checkSucess("hdfs://localhost:54310/harsh/chi/success/Chi"+appName+"Success"))
@@ -90,7 +88,7 @@ public class InputSplitOperator<T> extends BaseOperatorSerializable<T> implement
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
     }
 
 
@@ -103,6 +101,7 @@ public class InputSplitOperator<T> extends BaseOperatorSerializable<T> implement
         }
     }
 
+/*
     public boolean checkSucess(String path) throws IOException {
         Path pt=new Path(path);
         FileSystem hdfs = FileSystem.get(pt.toUri(), conf);
@@ -115,6 +114,7 @@ public class InputSplitOperator<T> extends BaseOperatorSerializable<T> implement
             return false;
 
     }
+*/
 
 
     public final  DefaultOutputPortSerializable<Object> output = new DefaultOutputPortSerializable<Object>();
