@@ -57,7 +57,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
     public Partition[] partitions_=getPartitions();
     protected Option<Partitioner> partitioner = (Option<Partitioner>) new ApexRDDOptionPartitioner();
     Logger log = LoggerFactory.getLogger(ApexRDD.class);
-    boolean launchOnCluster=true;
+    boolean launchOnCluster=false;
 
 
     public ApexRDD(RDD<T> rdd, ClassTag<T> classTag) {
@@ -110,12 +110,12 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         return currentOperator.getInputPort();
     }
     public DefaultOutputPortSerializable getControlOutput(SerializableDAG cloneDag){
-        //BaseInputOperatorSerializable currentOperator= (BaseInputOperatorSerializable) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
-        InputSplitOperator currentInputSplitOperator= (InputSplitOperator) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
-        return currentInputSplitOperator.getControlOut();
+        BaseInputOperatorSerializable currentOperator= (BaseInputOperatorSerializable) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
+//        InputSplitOperator currentInputSplitOperator= (InputSplitOperator) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
+        return currentOperator.getControlOut();
     }
-    public InputSplitOperator<T> getInputSplitOperator(SerializableDAG cloneDag){
-        return (InputSplitOperator) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
+    public BaseInputOperatorSerializable<T> getInputSplitOperator(SerializableDAG cloneDag){
+        return (BaseInputOperatorSerializable<T>) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
     }
     public void enableParallelPartition(BaseOperatorSerializable currentOperator, SerializableDAG cloneDag){
         int minPartitions = getInputSplitOperator(cloneDag).minPartitions;

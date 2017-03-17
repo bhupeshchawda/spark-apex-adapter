@@ -1,5 +1,6 @@
 package org.apache.apex.adapters.spark;
 
+import org.apache.apex.adapters.spark.operators.BaseInputOperatorSerializable;
 import org.apache.apex.adapters.spark.operators.InputSplitOperator;
 import org.apache.spark.SparkContext;
 import org.apache.spark.rdd.RDD;
@@ -23,8 +24,8 @@ public class ApexContext extends SparkContext implements Serializable
   public RDD<String> textFile(String path, int minPartitions)
   {
     ApexRDD rdd = new ApexRDD<>(this);
-   // BaseInputOperatorSerializable fileInput = rdd.getDag().addOperator(System.currentTimeMillis()+ " Input ", BaseInputOperatorSerializable.class);
-    InputSplitOperator fileInput = rdd.getDag().addOperator(System.currentTimeMillis()+ " Input ", InputSplitOperator.class);
+    BaseInputOperatorSerializable fileInput = rdd.getDag().addOperator(System.currentTimeMillis()+ " Input ", BaseInputOperatorSerializable.class);
+//    InputSplitOperator fileInput = rdd.getDag().addOperator(System.currentTimeMillis()+ " Input ", InputSplitOperator.class);
     rdd.currentOperator =  fileInput;
     rdd.currentOperatorType = ApexRDD.OperatorType.INPUT;
     rdd.currentOutputPort =  fileInput.output;

@@ -5,22 +5,11 @@ import com.datatorrent.api.DefaultInputPort;
 import com.datatorrent.common.util.BaseOperator;
 import org.apache.apex.adapters.spark.io.WriteToFS;
 
-import java.io.BufferedWriter;
-
-//import org.apache.hadoop.fs.FileSystem;
-
 public class FileWriterOperator extends BaseOperator
 {
-    private BufferedWriter bw;
     private String absoluteFilePath;
-    public String successFilePath;
     public FileWriterOperator()
     {
-    }
-
-    @Override
-    public void beginWindow(long windowId) {
-
     }
 
     @Override
@@ -41,13 +30,6 @@ public class FileWriterOperator extends BaseOperator
         }
     };
 
-    @Override
-    public void endWindow() {
-
-    }
-    public void setSuccessFilePath(String path){
-        this.successFilePath=path;
-    }
     public void setAbsoluteFilePath(String absoluteFilePath)
     {
         this.absoluteFilePath = absoluteFilePath;

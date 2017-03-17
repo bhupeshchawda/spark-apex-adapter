@@ -51,22 +51,9 @@ public class WriteToFS {
     public synchronized static void deleteSUCCESSFileLocal() {
     }
 
-    public synchronized static void deleteSUCCESSFileHDFS() {
-        Configuration conf = new Configuration(true);
-        PathProperties properties = new PathProperties();
-        String successHDFS = properties.getProperty("successHDFS");
-        Path pt=new Path(successHDFS);
-        try {
-            org.apache.hadoop.fs.FileSystem hdfs = org.apache.hadoop.fs.FileSystem.get(pt.toUri(), conf);
-            if(hdfs.exists(pt)){
-                hdfs.delete(pt,false);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
-    public static synchronized void createSuccessFile() {
+
+    public static synchronized void createSuccessFileAlluxio() {
         FileSystem fs = FileSystem.Factory.get();
         AlluxioURI pathURI = new AlluxioURI("/user/anurag/spark-apex/_SUCCESS");
         try {
@@ -82,55 +69,6 @@ public class WriteToFS {
             e.printStackTrace();
         }
 
-    }
-    public static synchronized  void writeFileToAlluxio(String path,Object o) {
-        try {
-            FileSystem fs = FileSystem.Factory.get();
-            AlluxioURI pathURI = new AlluxioURI("/user/anurag/spark-apex/" + path);
-            if (fs.exists(pathURI))
-                fs.delete(pathURI);
-            FileOutStream outStream = fs.createFile(pathURI);
-            ObjectOutputStream oos = new ObjectOutputStream(outStream);
-            oos.writeObject(o);
-            oos.flush();
-            oos.close();
-            outStream.flush();
-            outStream.close();
-            createSuccessFile();
-        }
-        catch (AlluxioException | IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public synchronized static void deleteSUCCESSFileAlluxio() {
-        try {
-            alluxio.client.file.FileSystem fs = alluxio.client.file.FileSystem.Factory.get();
-            AlluxioURI pathURI=new AlluxioURI("/user/anurag/spark-apex/_SUCCESS");
-            if(fs.exists(pathURI)) fs.delete(pathURI);
-
-        } catch (IOException | AlluxioException e) {
-            e.printStackTrace();
-        }
-
-    }
-    public synchronized static void writeFileToHDFS(String path,Object o){
-        Configuration configuration = new Configuration(true);
-        try {
-            Path file = new Path(path);
-            org.apache.hadoop.fs.FileSystem hdfs = org.apache.hadoop.fs.FileSystem.get(file.toUri(), configuration);
-            if (hdfs.exists(file)) {
-                hdfs.delete(file, true);
-            }
-            OutputStream os = hdfs.create(file);
-            ObjectOutputStream oos=new ObjectOutputStream(os);
-                oos.writeObject(o);
-                oos.flush();
-                oos.close();
-            createHDFSSuccessFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public static synchronized void createHDFSSuccessFile() {
@@ -149,6 +87,46 @@ public class WriteToFS {
         }
 
     }
+    public static synchronized  void writeFileToAlluxio(String path,Object o) {
+        try {
+            FileSystem fs = FileSystem.Factory.get();
+            AlluxioURI pathURI = new AlluxioURI("/user/anurag/spark-apex/" + path);
+            if (fs.exists(pathURI))
+                fs.delete(pathURI);
+            FileOutStream outStream = fs.createFile(pathURI);
+            ObjectOutputStream oos = new ObjectOutputStream(outStream);
+            oos.writeObject(o);
+            oos.flush();
+            oos.close();
+            outStream.flush();
+            outStream.close();
+            createSuccessFileAlluxio();
+        }
+        catch (AlluxioException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public synchronized static void writeFileToHDFS(String path,Object o){
+        Configuration configuration = new Configuration(true);
+        try {
+            Path file = new Path(path);
+            org.apache.hadoop.fs.FileSystem hdfs = org.apache.hadoop.fs.FileSystem.get(file.toUri(), configuration);
+            if (hdfs.exists(file)) {
+                hdfs.delete(file, true);
+            }
+            OutputStream os = hdfs.create(file);
+            ObjectOutputStream oos=new ObjectOutputStream(os);
+            oos.writeObject(o);
+            oos.flush();
+            oos.close();
+            createHDFSSuccessFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public synchronized  static void writeFileToLocal(String path,Object o) {
         try {
             FileOutputStream fos = new FileOutputStream(path);
@@ -164,5 +142,30 @@ public class WriteToFS {
             throw new RuntimeException(e);
         }
 
+    }
+    public synchronized static void deleteSUCCESSFileAlluxio() {
+        try {
+            alluxio.client.file.FileSystem fs = alluxio.client.file.FileSystem.Factory.get();
+            AlluxioURI pathURI=new AlluxioURI("/user/anurag/spark-apex/_SUCCESS");
+            if(fs.exists(pathURI)) fs.delete(pathURI);
+
+        } catch (IOException | AlluxioException e) {
+            e.printStackTrace();
+        }
+
+    }
+    public synchronized static void deleteSUCCESSFileHDFS() {
+        Configuration conf = new Configuration(true);
+        PathProperties properties = new PathProperties();
+        String successHDFS = properties.getProperty("successHDFS");
+        Path pt=new Path(successHDFS);
+        try {
+            org.apache.hadoop.fs.FileSystem hdfs = org.apache.hadoop.fs.FileSystem.get(pt.toUri(), conf);
+            if(hdfs.exists(pt)){
+                hdfs.delete(pt,false);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
