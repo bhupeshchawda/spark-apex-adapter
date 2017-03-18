@@ -8,16 +8,26 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.*;
 
 /**
  * Created by anurag on 24/2/17.
  */
-public class ReadFromFS {
-    public static Object read(String path)  {
+public class ReadFromFS implements Serializable {
+
+    public  String getAppBasePath () {
+        PathProperties properties = new PathProperties();
+        String fs = properties.getProperty("fs").toLowerCase();
+        switch (fs) {
+            case "alluxio":
+                return properties.getProperty("alluxio_app_path");
+            case "hdfs":
+                return properties.getProperty("hdfs_app_path");
+        }
+        return null;
+    }
+
+    public  Object read(String path)  {
         PathProperties properties = new PathProperties();
         String fs = properties.getProperty("fs").toLowerCase();
         switch (fs){
@@ -30,7 +40,7 @@ public class ReadFromFS {
         }
         return null;
     }
-    public static boolean successFileExists(){
+    public  boolean successFileExists(){
         PathProperties properties = new PathProperties();
         String fs = properties.getProperty("fs").toLowerCase();
         switch (fs){
@@ -45,11 +55,26 @@ public class ReadFromFS {
         }
     }
 
-    public synchronized static boolean successFileHDFS() {
+
+    public  boolean successFileLocal() {
+        return false;
+    }
+    public synchronized  boolean successFileAlluxio(){
+
+        alluxio.client.file.FileSystem fs = alluxio.client.file.FileSystem.Factory.get();
+        AlluxioURI pathURI=new AlluxioURI(getAppBasePath()+"/_SUCCESS");
+        try {
+            return fs.exists(pathURI);
+        } catch (IOException | AlluxioException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+    public synchronized  boolean successFileHDFS() {
+
         Configuration conf = new Configuration(true);
-        PathProperties properties = new PathProperties();
-        String successHDFS = properties.getProperty("successHDFS");
-        Path pt=new Path(successHDFS);
+
+        Path pt=new Path(getAppBasePath()+"/_SUCCESS");
         try {
             FileSystem hdfs = FileSystem.get(pt.toUri(), conf);
             if(hdfs.exists(pt)){
@@ -60,16 +85,10 @@ public class ReadFromFS {
         }
         return false;
     }
-
-    public static boolean successFileLocal() {
-        return false;
-    }
-
-
-    public synchronized  static Object readFromAlluxio(String path)  {
+    public synchronized   Object readFromAlluxio(String path)  {
         try {
             alluxio.client.file.FileSystem fs = alluxio.client.file.FileSystem.Factory.get();
-            AlluxioURI pathURI = new AlluxioURI("/user/anurag/spark-apex/"+path);
+            AlluxioURI pathURI = new AlluxioURI(getAppBasePath()+"/"+path);
             FileInStream inStream = fs.openFile(pathURI);
             ObjectInputStream ois = new ObjectInputStream(inStream);
             return ois.readObject();
@@ -78,18 +97,8 @@ public class ReadFromFS {
             throw new RuntimeException(e);
         }
     }
-    public synchronized static boolean successFileAlluxio(){
 
-        alluxio.client.file.FileSystem fs = alluxio.client.file.FileSystem.Factory.get();
-        AlluxioURI pathURI=new AlluxioURI("/user/anurag/spark-apex/_SUCCESS");
-        try {
-            return fs.exists(pathURI);
-        } catch (IOException | AlluxioException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-    public static Object readFromLocal(String path) {
+    public  Object readFromLocal(String path) {
         try {
             FileInputStream fis = new FileInputStream(path);
             ObjectInputStream ois = new ObjectInputStream(fis);
@@ -102,9 +111,9 @@ public class ReadFromFS {
         }
 
     }
-    public static Object readFromHDFS(String path){
+    public synchronized Object readFromHDFS(String path){
         Configuration conf = new Configuration(true);
-        Path pt=new Path(path);
+        Path pt=new Path(getAppBasePath()+"/"+path);
         try {
             FileSystem hdfs = FileSystem.get(pt.toUri(), conf);
             InputStream inputStream = hdfs.open(pt);

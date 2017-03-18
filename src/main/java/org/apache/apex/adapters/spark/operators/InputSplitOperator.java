@@ -21,7 +21,7 @@ public class InputSplitOperator<T> extends BaseOperatorSerializable<T> implement
     public String path;
     public boolean shutApp=false;
     public String appName="";
-    public int minPartitions;
+    public static int minPartitions;
     public transient InputSplit splits[];
     public transient FileInputFormat fileInputFormat;
     public transient Configuration conf;

@@ -13,7 +13,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 
-import static org.apache.apex.adapters.spark.io.ReadFromFS.successFileExists;
 
 /**
  * Created by harsh on 2/12/16.
@@ -73,11 +72,6 @@ public class BaseInputOperatorSerializable<T> extends BaseOperatorSerializable<T
     @Override
     public void beginWindow(long windowId) {
         if(sent){
-            if(successFileExists()) {
-//                    throw new ShutdownException();
-            }
-
-
             controlOut.emit(true);
         }
     }

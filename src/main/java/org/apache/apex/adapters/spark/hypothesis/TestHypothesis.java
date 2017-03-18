@@ -31,7 +31,7 @@ public class TestHypothesis implements Serializable {
     public TestHypothesis(ApexContext sc) {
         PathProperties properties = new PathProperties();
 
-        String path = properties.getProperty("chiTrainData");
+        String path = properties.getProperty("chiTrainDataHDFS");
 
         ClassTag<LabeledPoint> tag = scala.reflect.ClassTag$.MODULE$.apply(LabeledPoint.class);
         Vector vec = Vectors.dense(0.1, 0.15, 0.2, 0.3, 0.25);

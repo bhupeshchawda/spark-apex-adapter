@@ -8,6 +8,7 @@ import com.datatorrent.stram.client.StramAppLauncher;
 import org.apache.apex.adapters.spark.apexscala.ApexPartition;
 import org.apache.apex.adapters.spark.apexscala.ScalaApexRDD;
 import org.apache.apex.adapters.spark.io.ReadFromFS;
+import org.apache.apex.adapters.spark.io.WriteToFS;
 import org.apache.apex.adapters.spark.operators.*;
 import org.apache.apex.adapters.spark.properties.PathProperties;
 import org.apache.commons.lang.SerializationUtils;
@@ -35,13 +36,13 @@ import scala.collection.Map;
 import scala.math.Ordering;
 import scala.reflect.ClassTag;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.Long;
 import java.util.*;
 
 import static com.datatorrent.api.Context.OperatorContext.PARTITIONER;
-import static org.apache.apex.adapters.spark.io.WriteToFS.deleteSUCCESSFile;
 
 public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
     private static final long serialVersionUID = -3545979419189338756L;
@@ -55,14 +56,18 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
     public SerializableDAG dag;
     public ApexRDDPartitioner apexRDDPartitioner = new ApexRDDPartitioner();
     public Partition[] partitions_=getPartitions();
+    public ReadFromFS  readFromFS;
+    public WriteToFS writeToFS;
     protected Option<Partitioner> partitioner = (Option<Partitioner>) new ApexRDDOptionPartitioner();
     Logger log = LoggerFactory.getLogger(ApexRDD.class);
-    boolean launchOnCluster=false;
+    boolean launchOnCluster=true;
 
 
     public ApexRDD(RDD<T> rdd, ClassTag<T> classTag) {
         super(rdd, classTag);
         this.dag=((ApexRDD<T>)rdd).dag;
+        readFromFS = new ReadFromFS();
+        writeToFS = new WriteToFS();
 
     }
 
@@ -72,6 +77,8 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         dag = new SerializableDAG();
         context=ac;
         _sc=ac;
+        readFromFS = new ReadFromFS();
+        writeToFS = new WriteToFS();
     }
 
     @Override
@@ -105,25 +112,39 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         }
         return currentOperator.getOutputPort();
     }
-    public DefaultInputPortSerializable getFirstInputPort(SerializableDAG cloneDag){
-        BaseInputOperatorSerializable currentOperator= (BaseInputOperatorSerializable) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
-        return currentOperator.getInputPort();
+    public DefaultOutputPortSerializable getControlOutput(SerializableDAG cloneDag) {
+        PathProperties properties = new PathProperties();
+        String fs = properties.getProperty("fs").toLowerCase();
+        if (fs.equals("hdfs")) {
+
+            return getInputSplitOperator(cloneDag).getControlOut();
+        }
+        else{
+            return getBaseInputOperator(cloneDag).getControlOut();
+        }
+
     }
-    public DefaultOutputPortSerializable getControlOutput(SerializableDAG cloneDag){
-        BaseInputOperatorSerializable currentOperator= (BaseInputOperatorSerializable) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
-//        InputSplitOperator currentInputSplitOperator= (InputSplitOperator) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
-        return currentOperator.getControlOut();
-    }
-    public BaseInputOperatorSerializable<T> getInputSplitOperator(SerializableDAG cloneDag){
+    public BaseInputOperatorSerializable<T> getBaseInputOperator(SerializableDAG cloneDag){
         return (BaseInputOperatorSerializable<T>) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
     }
+    private InputSplitOperator getInputSplitOperator(SerializableDAG cloneDag) {
+        return (InputSplitOperator) cloneDag.getOperatorMeta(cloneDag.getFirstOperatorName()).getOperator();
+    }
     public void enableParallelPartition(BaseOperatorSerializable currentOperator, SerializableDAG cloneDag){
-        int minPartitions = getInputSplitOperator(cloneDag).minPartitions;
+        PathProperties properties = new PathProperties();
+        String fs = properties.getProperty("fs").toLowerCase();
+        int minPartitions;
+        if (fs.equals("hdfs"))
+            minPartitions = getInputSplitOperator(cloneDag).minPartitions;
+        else
+            minPartitions = getBaseInputOperator(cloneDag).minPartitions;
         if(minPartitions > 1) {
             cloneDag.setAttribute(currentOperator, PARTITIONER, new StatelessPartitioner<BaseInputOperatorSerializable>(minPartitions));
             cloneDag.setInputPortAttribute(currentOperator.getInputPort(), Context.PortContext.PARTITION_PARALLEL, true);
         }
     }
+
+
 
     public <U> RDD<U> map(Function <T,U> f){
 
@@ -160,16 +181,9 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        while(!successFileExists()) {
-            log.info("Waiting for the _SUCCESS file");
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        ArrayList<T> collected= (ArrayList<T>) ReadFromFS.read("collected");
-        deleteSUCCESSFile();
+
+        ArrayList<T> collected= (ArrayList<T>) readFromFS.read("collected");
+        writeToFS.deleteSUCCESSFile();
         return (T[]) collected.toArray();
     }
 
@@ -191,8 +205,8 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        ArrayList<T> array = (ArrayList<T>) ReadFromFS.read("selectedData");
-        deleteSUCCESSFile();
+        ArrayList<T> array = (ArrayList<T>) readFromFS.read("selectedData");
+        writeToFS.deleteSUCCESSFile();
 //        T[] arrayT= (T[]) Arrays.copyOf(array.toArray(),array.toArray().length,Integer[].class);
         return (T[]) array.toArray();
     }
@@ -275,16 +289,10 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        while(!successFileExists()) {
-            log.info("Waiting for the _SUCCESS file");
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        T reducedValue= (T) ReadFromFS.read("reducedValue");
-        deleteSUCCESSFile();
+
+        T reducedValue= (T) readFromFS.read("reducedValue");
+        writeToFS.deleteSUCCESSFile();
+
         return reducedValue;
     }
 
@@ -309,16 +317,11 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        while(!successFileExists()) {
-            log.info("Waiting for the _SUCCESS file");
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        HashMap<T, Object> map = (HashMap<T, Object>) ReadFromFS.read("countByValueOutput");
-        deleteSUCCESSFile();
+        HashMap<T, Object> map = null;
+
+        map = (HashMap<T, Object>) readFromFS.read("countByValueOutput");
+        writeToFS.deleteSUCCESSFile();
+
         return scala.collection.JavaConversions.asScalaMap(map);
     }
 
@@ -341,7 +344,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        while(!successFileExists()) {
+        while(!readFromFS.successFileExists()) {
             log.info("Waiting for the _SUCCESS file");
             try {
                 Thread.sleep(10);
@@ -413,19 +416,12 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        while(!successFileExists()) {
-            log.info("Waiting for the _SUCCESS file");
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
 
-        Long count= (Long) ReadFromFS.read("count");
+
+        Long count= (Long) readFromFS.read("count");
         if(count==null)
             return 0L;
-        deleteSUCCESSFile();
+        writeToFS.deleteSUCCESSFile();
         return count;
     }
 
@@ -507,7 +503,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
     }
     public void runDag(SerializableDAG cloneDag, long runMillis, String name) throws Exception {
         cloneDag.validate();
-        String jars=getProperty("hjars");
+        String jars=getProperty("jars");
         String appProperty =getProperty("ApexAppProperty");
         log.info("DAG successfully validated {}",name);
         Configuration conf = new Configuration(true);
@@ -529,7 +525,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         StreamingAppFactory appFactory = new StreamingAppFactory(app, name);
 
         ApplicationId id = appLauncher.launchApp(appFactory);
-        while(!successFileExists()) {
+        while(!readFromFS.successFileExists()) {
             log.info("Waiting for the _SUCCESS file");
             try {
                 Thread.sleep(10);
@@ -583,7 +579,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         }
 
     }*/
-    public void     runDagLocal(SerializableDAG cloneDag, long runMillis, String name) throws IOException, AlluxioException, InterruptedException {
+    public void runDagLocal(SerializableDAG cloneDag, long runMillis, String name) throws IOException, AlluxioException, InterruptedException {
         cloneDag.validate();
         log.info("DAG successfully validated {}",name);
         LocalMode lma = LocalMode.newInstance();
@@ -599,7 +595,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
 //        File successFile = new File("/tmp/spark-apex/_SUCCESS");
 //        if(successFile.exists())    successFile.delete();
         lc.runAsync();
-        while(!successFileExists()) {
+        while(!readFromFS.successFileExists()) {
             log.info("Waiting for the _SUCCESS file");
             try {
                 Thread.sleep(10);

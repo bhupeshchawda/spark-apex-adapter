@@ -15,6 +15,7 @@ public class MapOperator<T,U> extends BaseOperatorSerializable implements Serial
     @Override
     public void setup(Context.OperatorContext context) {
         super.setup(context);
+        log.info("Partition ID {}", context.getId());
     }
     Logger log = LoggerFactory.getLogger(MapOperator.class);
     public Function1<T,U> f;

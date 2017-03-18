@@ -16,6 +16,7 @@ public class FilterOperator<T> extends BaseOperatorSerializable implements Seria
     public void setup(Context.OperatorContext context) {
         super.setup(context);
         id=context.getId();
+        log.info("Partition ID {}",id);
     }
     Logger log = LoggerFactory.getLogger(FilterOperator.class);
     public Function1 f;

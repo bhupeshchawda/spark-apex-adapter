@@ -18,7 +18,7 @@ public class LogisticRegressionTrain {
         PathProperties properties = new PathProperties();
         ApexContext sc= new ApexContext(new ApexConf().setMaster("local[2]").setAppName("Logistic Regression Train Module"));
         ClassTag<LabeledPoint> tag = scala.reflect.ClassTag$.MODULE$.apply(LabeledPoint.class);
-        ApexRDD<LabeledPoint> data = new ApexRDD<>( MLUtils.loadLibSVMFile(sc,properties.getProperty("trainData")),tag);
+        ApexRDD<LabeledPoint> data = new ApexRDD<>( MLUtils.loadLibSVMFile(sc,properties.getProperty("sample_libsvm_HDFS"),-1,1),tag);
 
         final LogisticRegressionModel model = new LogisticRegressionWithLBFGS()
                 .setNumClasses(10)

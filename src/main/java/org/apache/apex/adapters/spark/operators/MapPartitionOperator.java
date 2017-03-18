@@ -66,7 +66,7 @@ public class MapPartitionOperator<T,U> extends BaseOperatorSerializable implemen
 
     @Override
     public DefaultInputPortSerializable<T> getInputPort() {
-        return null;
+        return this.input;
     }
 
     public DefaultOutputPortSerializable getOutputPort() {

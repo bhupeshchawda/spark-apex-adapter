@@ -2,10 +2,10 @@ package org.apache.apex.adapters.spark.apexscala
 
 import java.io.IOException
 
-import alluxio.AlluxioURI
 import alluxio.exception.AlluxioException
 import com.datatorrent.api.LocalMode
 import org.apache.apex.adapters.spark.ApexRDD
+import org.apache.apex.adapters.spark.io.ReadFromFS
 import org.apache.apex.adapters.spark.operators._
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark._
@@ -184,18 +184,7 @@ def getCurrentOutputPort(cloneDag: SerializableDAG): DefaultOutputPortSerializab
   }
 
   override def first: T = this.take(1)(0)
-  def successFileExists: Boolean = {
-    val fs = alluxio.client.file.FileSystem.Factory.get
-    val pathURI = new AlluxioURI("/user/anurag/spark-apex/_SUCCESS")
-    try
-      fs.exists(pathURI)
 
-    catch {
-      case e: Any => {
-        throw new RuntimeException(e)
-      }
-    }
-  }
   @throws[IOException]
   @throws[AlluxioException]
   @throws[InterruptedException]
@@ -218,7 +207,8 @@ def getCurrentOutputPort(cloneDag: SerializableDAG): DefaultOutputPortSerializab
     //        File successFile = new File("/tmp/spark-apex/_SUCCESS");
     //        if(successFile.exists())    successFile.delete();
     lc.runAsync()
-    while (!successFileExists) {
+    val readFromFS = new ReadFromFS
+    while (!readFromFS.successFileExists) {
       log.info("Waiting for the _SUCCESS file")
       try
         Thread.sleep(10)

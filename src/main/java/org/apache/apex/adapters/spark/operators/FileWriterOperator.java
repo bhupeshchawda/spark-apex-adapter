@@ -8,8 +8,10 @@ import org.apache.apex.adapters.spark.io.WriteToFS;
 public class FileWriterOperator extends BaseOperator
 {
     private String absoluteFilePath;
+    public WriteToFS writeToFS;
     public FileWriterOperator()
     {
+        writeToFS = new WriteToFS();
     }
 
     @Override
@@ -24,7 +26,7 @@ public class FileWriterOperator extends BaseOperator
         public void process(Object tuple)
         {
             if(!isSerialized) {
-                WriteToFS.write(absoluteFilePath, tuple);
+                writeToFS.write(absoluteFilePath, tuple);
                 isSerialized=true;
             }
         }
