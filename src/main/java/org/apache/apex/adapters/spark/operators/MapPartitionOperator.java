@@ -81,7 +81,4 @@ public class MapPartitionOperator<T,U> extends BaseOperatorSerializable implemen
         return null;
     }
 
-
-    public boolean isInputPortOpen = true;
-    public boolean isOutputPortOpen = true;
 }

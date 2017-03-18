@@ -59,11 +59,7 @@ public class ReduceOperator<T> extends BaseOperatorSerializable implements Seria
 
     }
   };
-    @Override
-    public void endWindow() {
-//        output.emit(f3.apply(taskContext, 0,
-//                scala.collection.JavaConversions.asScalaIterator(rddData.iterator())));
-    }
+
 
   public final  DefaultInputPortSerializable<Boolean> controlDone = new DefaultInputPortSerializable<Boolean>() {
     @Override

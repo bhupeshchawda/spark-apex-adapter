@@ -15,7 +15,7 @@ public class PathProperties {
         try {
             String baseDir = System.getProperty("user.dir");
             String path = baseDir+"/src/main/resources/config.properties";
-            InputStream input = new FileInputStream("/home/anurag/spark-apex-adapter/src/main/resources/config.properties");
+            InputStream input = new FileInputStream("/home/harsh/spark-apex-adapter/src/main/resources/config.properties");
             properties.load(input);
         } catch (IOException e) {
             e.printStackTrace();

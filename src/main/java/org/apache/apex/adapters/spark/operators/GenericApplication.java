@@ -5,24 +5,22 @@ package org.apache.apex.adapters.spark.operators;
 */
 
 
-import com.datatorrent.api.*;
+import com.datatorrent.api.Context;
+import com.datatorrent.api.DAG;
+import com.datatorrent.api.Operator;
 import com.datatorrent.api.Operator.InputPort;
 import com.datatorrent.api.Operator.OutputPort;
+import com.datatorrent.api.StreamingApplication;
 import com.datatorrent.lib.codec.JavaSerializationStreamCodec;
 import com.datatorrent.stram.plan.logical.LogicalPlan;
 import com.datatorrent.stram.plan.logical.LogicalPlan.InputPortMeta;
 import com.datatorrent.stram.plan.logical.LogicalPlan.OperatorMeta;
 import com.datatorrent.stram.plan.logical.LogicalPlan.StreamMeta;
-import com.esotericsoftware.kryo.DefaultSerializer;
-import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import org.apache.hadoop.conf.Configuration;
-
-import java.io.Serializable;
 
 import static com.datatorrent.api.Context.OperatorContext.PARTITIONER;
 
-@DefaultSerializer(JavaSerializer.class)
-public class GenericApplication implements StreamingApplication,Serializable
+public class GenericApplication implements StreamingApplication
 {
     private LogicalPlan dag;
 
@@ -30,7 +28,6 @@ public class GenericApplication implements StreamingApplication,Serializable
     {
         this.dag = dag;
     }
-    private Attribute.AttributeMap hashMap;
     public void populateDAG(DAG dag, Configuration conf) {
         for (OperatorMeta o : this.dag.getAllOperators()) {
             dag.addOperator(o.getName(), o.getOperator());

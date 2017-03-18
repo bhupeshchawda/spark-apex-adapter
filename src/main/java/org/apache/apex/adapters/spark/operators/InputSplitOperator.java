@@ -20,7 +20,6 @@ public class InputSplitOperator<T> extends BaseOperatorSerializable<T> implement
 
     public String path;
     public boolean shutApp=false;
-    public String appName="";
     public static int minPartitions;
     public transient InputSplit splits[];
     public transient FileInputFormat fileInputFormat;
@@ -77,20 +76,6 @@ public class InputSplitOperator<T> extends BaseOperatorSerializable<T> implement
         return null;
     }
 
-    @Override
-    public void endWindow() {
-        super.endWindow();
-        /*if(shutApp) {
-            shutApp = false;
-            try {
-                if(checkSucess("hdfs://localhost:54310/harsh/chi/success/Chi"+appName+"Success"))
-                    throw new ShutdownException();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }*/
-    }
-
 
     @Override
     public void beginWindow(long windowId) {
@@ -100,21 +85,6 @@ public class InputSplitOperator<T> extends BaseOperatorSerializable<T> implement
             shutApp=true;
         }
     }
-
-/*
-    public boolean checkSucess(String path) throws IOException {
-        Path pt=new Path(path);
-        FileSystem hdfs = FileSystem.get(pt.toUri(), conf);
-        if(hdfs.exists(pt))
-        {
-            //hdfs.delete(pt,false);
-            return true;
-        }
-        else
-            return false;
-
-    }
-*/
 
 
     public final  DefaultOutputPortSerializable<Object> output = new DefaultOutputPortSerializable<Object>();

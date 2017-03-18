@@ -503,7 +503,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
     }
     public void runDag(SerializableDAG cloneDag, long runMillis, String name) throws Exception {
         cloneDag.validate();
-        String jars=getProperty("jars");
+        String jars=getProperty("hjars");
         String appProperty =getProperty("ApexAppProperty");
         log.info("DAG successfully validated {}",name);
         Configuration conf = new Configuration(true);
@@ -557,28 +557,7 @@ public class ApexRDD<T> extends ScalaApexRDD<T> implements Serializable {
         log.info("Deleted jars from {}",path);
     }
     public String appId;
-   /* public synchronized static void deleteSUCCESSFile() {
-        try {
-            alluxio.client.file.FileSystem fs = alluxio.client.file.FileSystem.Factory.get();
-            AlluxioURI pathURI=new AlluxioURI("/user/anurag/spark-apex/_SUCCESS");
-            if(fs.exists(pathURI)) fs.delete(pathURI);
 
-        } catch (IOException | AlluxioException e) {
-            e.printStackTrace();
-        }
-
-    }
-    public  boolean successFileExists(){
-
-        alluxio.client.file.FileSystem fs = alluxio.client.file.FileSystem.Factory.get();
-        AlluxioURI pathURI=new AlluxioURI("/user/anurag/spark-apex/_SUCCESS");
-        try {
-            return fs.exists(pathURI);
-        } catch (IOException | AlluxioException e) {
-            throw new RuntimeException(e);
-        }
-
-    }*/
     public void runDagLocal(SerializableDAG cloneDag, long runMillis, String name) throws IOException, AlluxioException, InterruptedException {
         cloneDag.validate();
         log.info("DAG successfully validated {}",name);

@@ -1,12 +1,16 @@
 package org.apache.apex.adapters.spark;
 
+import com.datatorrent.common.partitioner.StatelessPartitioner;
 import org.apache.apex.adapters.spark.operators.BaseInputOperatorSerializable;
+import org.apache.apex.adapters.spark.operators.BaseOperatorSerializable;
 import org.apache.apex.adapters.spark.operators.InputSplitOperator;
 import org.apache.apex.adapters.spark.properties.PathProperties;
 import org.apache.spark.SparkContext;
 import org.apache.spark.rdd.RDD;
 
 import java.io.Serializable;
+
+import static com.datatorrent.api.Context.OperatorContext.PARTITIONER;
 
 //@DefaultSerializer(JavaSerializer.class)
 public class ApexContext extends SparkContext implements Serializable
@@ -26,6 +30,7 @@ public class ApexContext extends SparkContext implements Serializable
       if (fs.equals("hdfs")){
           ApexRDD rdd = new ApexRDD<>(this);
           InputSplitOperator fileInput = rdd.getDag().addOperator(System.currentTimeMillis()+ " Input ", InputSplitOperator.class);
+          rdd.getDag().setAttribute(fileInput,PARTITIONER,new StatelessPartitioner<BaseOperatorSerializable>(minPartitions));
           rdd.currentOperator = fileInput;
           rdd.currentOperatorType = ApexRDD.OperatorType.INPUT;
           rdd.currentOutputPort = fileInput.output;

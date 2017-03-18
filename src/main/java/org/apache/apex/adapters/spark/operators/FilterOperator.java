@@ -52,9 +52,5 @@ public class FilterOperator<T> extends BaseOperatorSerializable implements Seria
         return null;
     }
 
-
-  public boolean isInputPortOpen=true;
-  public boolean isOutputPortOpen=true;
-
 }
 
