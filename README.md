@@ -1,1 +1,1 @@
-# spark-apex-adapter
+# spark-apex

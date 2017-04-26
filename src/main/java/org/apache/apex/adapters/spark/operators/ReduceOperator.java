@@ -1,50 +1,89 @@
 package org.apache.apex.adapters.spark.operators;
 
-import com.datatorrent.api.DefaultInputPort;
-import com.datatorrent.api.DefaultOutputPort;
-import com.datatorrent.common.util.BaseOperator;
-
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.esotericsoftware.kryo.serializers.JavaSerializer;
+import org.apache.spark.TaskContext;
+import scala.Function1;
 import scala.Function2;
 
-public class ReduceOperator extends BaseOperator
-{
-  public Function2 f;
-  Object previousValue = null;
-  Object finalValue = null;
-  private boolean done = false;
+import java.io.Serializable;
+import java.util.ArrayList;
 
-  @Override
+@DefaultSerializer(JavaSerializer.class)
+public class ReduceOperator<T> extends BaseOperatorSerializable implements Serializable
+{
+  public Function2<T,T,T> f;
+  public Function1 f1;
+  public T previousValue = null;
+  public static Object finalValue;
+  private boolean done = false;
+    ArrayList<T> rddData = new ArrayList<>();
+    public TaskContext taskContext;
+    public Object object;
+  public ReduceOperator() {
+
+  }
+
+    public DefaultOutputPortSerializable<Integer> getCountOutputPort() {
+        return null;
+    }
+
+    @Override
   public void beginWindow(long windowId)
   {
     if (done) {
-      System.out.println("Emitted Final Value: " + finalValue);
       output.emit(finalValue);
-      done = false;
     }
   }
 
-  public final transient DefaultInputPort<Object> input = new DefaultInputPort<Object>()
-  {
+
+    public final  DefaultInputPortSerializable<T>   input = new DefaultInputPortSerializable<T>() {
     @Override
-    public void process(Object tuple)
+    public void process(T tuple)
     {
       if (previousValue == null) {
         previousValue = tuple;
         finalValue = tuple;
       } else {
-        finalValue = f.apply(previousValue, tuple);
-        System.out.println("Current Final Value: " + finalValue);
+          previousValue = tuple;
+          try {
+              finalValue = f.apply((T) finalValue, previousValue);
+          }
+          catch (ClassCastException classCastException){
+
+//              finalValue= (T) f1.apply(previousValue);
+
+            classCastException.printStackTrace();
+          }
       }
+
     }
   };
 
-  public final transient DefaultInputPort<Boolean> controlDone = new DefaultInputPort<Boolean>()
-  {
+
+  public final  DefaultInputPortSerializable<Boolean> controlDone = new DefaultInputPortSerializable<Boolean>() {
     @Override
     public void process(Boolean tuple)
     {
       done = true;
     }
   };
-  public final transient DefaultOutputPort<Object> output = new DefaultOutputPort<>();
+  public final  DefaultOutputPortSerializable<Object> output = new DefaultOutputPortSerializable<Object>();
+  public  DefaultOutputPortSerializable<Object> getOutputPort(){
+    return this.output;
+  }
+
+  public DefaultInputPortSerializable getControlPort() {
+    return controlDone;
+  }
+
+  public DefaultOutputPortSerializable<Boolean> getControlOut() {
+    return null;
+  }
+
+  public DefaultInputPortSerializable<T> getInputPort(){
+    return  this.input;
+  }
+
+
 }

@@ -15,3 +15,7 @@ x-java
 nb-configuration.xml
 gateway/src/main/htdocs
 site/
+/target/
+.idea/
+spark-example.iml
+/.idea/

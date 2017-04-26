@@ -1,14 +1,19 @@
 package org.apache.apex.adapters.spark;
 
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import org.apache.spark.SparkConf;
 
-public class ApexConf extends SparkConf
-{
-  public ApexConf()
-  {
-  }
+import java.io.Serializable;
 
-  @Override
+@DefaultSerializer(JavaSerializer.class)
+public class ApexConf extends SparkConf implements Serializable
+{
+    public ApexConf() {
+
+    }
+
+    @Override
   public ApexConf setMaster(String master)
   {
     return (ApexConf) super.setMaster(master);

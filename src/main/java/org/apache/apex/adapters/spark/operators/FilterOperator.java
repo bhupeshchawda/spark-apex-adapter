@@ -1,16 +1,26 @@
 package org.apache.apex.adapters.spark.operators;
 
-import com.datatorrent.api.DefaultInputPort;
-import com.datatorrent.api.DefaultOutputPort;
-import com.datatorrent.common.util.BaseOperator;
-
+import com.datatorrent.api.Context;
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.esotericsoftware.kryo.serializers.JavaSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import scala.Function1;
 
-public class FilterOperator extends BaseOperator
+import java.io.Serializable;
+@DefaultSerializer(JavaSerializer.class)
+public class FilterOperator<T> extends BaseOperatorSerializable implements Serializable
 {
-  public Function1 f;
-  public final transient DefaultInputPort<Object> input = new DefaultInputPort<Object>()
-  {
+    int id=0;
+    @Override
+    public void setup(Context.OperatorContext context) {
+        super.setup(context);
+        id=context.getId();
+        log.info("Partition ID {}",id);
+    }
+    Logger log = LoggerFactory.getLogger(FilterOperator.class);
+    public Function1 f;
+  public final  DefaultInputPortSerializable<Object> input = new DefaultInputPortSerializable<Object>() {
     @Override
     public void process(Object tuple)
     {
@@ -19,6 +29,28 @@ public class FilterOperator extends BaseOperator
       }
     }
   };
-  public final transient DefaultOutputPort<Object> output = new DefaultOutputPort<>();
+  public final  DefaultOutputPortSerializable<Object> output = new DefaultOutputPortSerializable<Object>();
+
+    @Override
+    public DefaultInputPortSerializable<T> getInputPort() {
+        return (DefaultInputPortSerializable<T>) this.input;
+    }
+
+    public DefaultOutputPortSerializable<Object> getOutputPort(){
+    return this.output;
+  }
+
+  public DefaultInputPortSerializable getControlPort() {
+    return null;
+  }
+
+  public DefaultOutputPortSerializable<Boolean> getControlOut() {
+    return null;
+  }
+
+    public DefaultOutputPortSerializable<Integer> getCountOutputPort() {
+        return null;
+    }
+
 }
 
